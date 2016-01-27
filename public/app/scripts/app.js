@@ -38,6 +38,6 @@ angular
         })
         .constant('config', {
             // Change it for your app URL
-            SIGNALIG_SERVER_URL: 'http://localhost/webrtc-app/public/app'
+            SIGNALIG_SERVER_URL: 'http://localhost:5555'
         });
 
