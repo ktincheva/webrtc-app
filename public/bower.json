@@ -9,7 +9,10 @@
     "angular-resource": "^1.4.0",
     "angular-route": "^1.4.0",
     "angular-sanitize": "^1.4.0",
-    "angular-touch": "^1.4.0"
+    "angular-touch": "^1.4.0",
+    "json3": "^3.3.0",
+    "es5-shim": "^4.0.0",
+    "eventemitter3": "^1.1.1"
   },
   "devDependencies": {
     "angular-mocks": "^1.4.0"
