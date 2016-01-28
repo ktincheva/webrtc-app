@@ -32,12 +32,21 @@ angular
                         templateUrl: 'views/room.html',
                         controller: 'RoomCtrl'
                     })
+
+                    .when('/chat', {
+                        templateUrl: 'views/chat.html',
+                        controller: 'ChatCtrl'
+                    })
+                    .when('/chat/:roomId', {
+                        templateUrl: 'views/chat.html',
+                        controller: 'ChatCtrl'
+                    })
                     .otherwise({
                         redirectTo: '/room'
                     });
         })
         .constant('config', {
             // Change it for your app URL
-            SIGNALIG_SERVER_URL: 'http://localhost:5555'
+            SIGNALIG_SERVER_URL: 'http://192.168.11.6:5555'
         });
 
