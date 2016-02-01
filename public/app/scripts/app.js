@@ -41,6 +41,10 @@ angular
                         templateUrl: 'views/chat.html',
                         controller: 'ChatCtrl'
                     })
+                        .when('/connected', {
+                        templateUrl: 'views/connected.html',
+                        controller: 'ConnectedCtrl'
+                    })
                     .otherwise({
                         redirectTo: '/room'
                     });
