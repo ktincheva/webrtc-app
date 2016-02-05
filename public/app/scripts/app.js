@@ -41,7 +41,15 @@ angular
                         templateUrl: 'views/chat.html',
                         controller: 'ChatCtrl'
                     })
-                        .when('/connected', {
+                    .when('/messaging', {
+                        templateUrl: 'views/messaging_rooms.html',
+                        controller: 'MessagingCtrl'
+                    })
+                    .when('/messaging/:roomId', {
+                        templateUrl: 'views/messaging_rooms.html',
+                        controller: 'MessagingCtrl'
+                    })
+                    .when('/connected', {
                         templateUrl: 'views/connected.html',
                         controller: 'ConnectedCtrl'
                     })

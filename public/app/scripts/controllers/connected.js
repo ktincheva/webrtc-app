@@ -16,7 +16,7 @@ angular.module('publicApp')
       'Karma'
     ];
     var gatherButton = document.querySelector('button#gather');
-var candidateTBody = document.querySelector('tbody#candidatesBody');
+v
             gatherButton.onclick = Connected.start;
             
   });
