@@ -8,7 +8,7 @@
             remoteVideo = document.getElementById('remote-video'),
             iceConfig = {'iceServers': [{'url': 'stun:stun.l.google.com:19302'}
                 ]},
-    peerConnection = new RTCPeerConnection(iceConfig),
+     peerConnection = new RTCPeerConnection(iceConfig),
             socket = io.connect(location.protocol + '//' + location.host),
             roomId = 2,
             clientConnected = false,

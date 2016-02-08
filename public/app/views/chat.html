@@ -6,13 +6,21 @@
         <link rel="stylesheet" href="styles/styles.css">
     </head>
     <body>
-        <div ng-controller="ChatCtrl">  
+
+        <div>
+
             <div class="iphone-frame">
                 <div class="screen-wrapper">
                     <video class="remote-video active" autoplay id="remote-video"></video>
-                    <video class="local-video active" autoplay id="local-video" ng-src="{{getLocalVideo()}}" muted></video>
+                    <video class="local-video active" autoplay id="local-video" muted></video>
                     <input type="text" id="url-input" disabled>
+
                 </div>
+            </div>
+            <div>
+                <button id="startButton">Start</button>
+                <button id="callButton">Call</button>
+                <button id="hangupButton">Hang Up</button>
             </div>
         </div>
     </body>

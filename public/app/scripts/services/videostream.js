@@ -10,9 +10,13 @@
 angular.module('publicApp')
   .factory('VideoStream', function ($q) {
     var stream;
+    
     return {
+        
       get: function () {
+       console.log("Video stream"+stream);   
         if (stream) {
+          console.log($q);
           return $q.when(stream);
         } else {
           var d = $q.defer();
