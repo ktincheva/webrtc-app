@@ -16,7 +16,7 @@
             cameraEnabled = false,
             localObjectUrl;
 
-    console.log(iceConfig);
+    console.log(localVideo);
     console.log(peerConnection);
     document.getElementById('url-input').value = location.href;
 
@@ -86,7 +86,7 @@
         console.log("get user media");
 
         localObjectUrl = URL.createObjectURL(stream);
-        console.log(clientConnected);
+        console.log("get user media: "+clientConnected);
         localVideo.src = localObjectUrl;
         console.log('---- add strem -----')
         peerConnection.addStream(stream);
