@@ -16,7 +16,7 @@
             cameraEnabled = false,
             localObjectUrl;
 
-    console.log(localVideo);
+   
     console.log(peerConnection);
     document.getElementById('url-input').value = location.href;
 
@@ -79,7 +79,7 @@
                 break;
         }
     }
-    console.log(roomId);
+    console.log("room id before init"+roomId);
     socket.emit('init', {room: roomId});
 
     navigator.getUserMedia({video: true, audio: true}, function (stream) {

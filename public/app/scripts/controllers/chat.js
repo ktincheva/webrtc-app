@@ -65,37 +65,85 @@ angular.module('publicApp')
 
             var localStream;
             var pc1;
-            var pc2;
             var offerOptions = {
                 offerToReceiveAudio: 1,
                 offerToReceiveVideo: 1
             };
 
-            function getName(pc) {
-                return (pc === pc1) ? 'pc1' : 'pc2';
-            }
+            peerConnection.onicecandidate = function (evnt) {
+                console.log('on ise candidate');
+                socket.emit('msg', {room: roomId, ice: evnt.candidate, type: 'ice'});
+            };
 
-            function getOtherPc(pc) {
-                return (pc === pc1) ? pc2 : pc1;
+            peerConnection.onaddstream = function (evnt) {
+                localVideo.classList.remove('active');
+                console.log("on add stream");
+                console.log(evnt.stream);
+                remoteVideo.src = window.URL.createObjectURL(evnt.stream);
+            };
+            console.log("controller loaded event handlers");
+            socket.on('peer.connected', function (data) {
+
+                console.log('peer connected' + data)
+                clientConnected = true;
+                console.log(clientConnected);
+                /* if (!offered && cameraEnabled)
+                 makeOffer(); */
+            });
+
+
+
+            peerConnection.oniceconnectionstatechange = function (e) {
+
+                onIceStateChange(peerConnection, e);
+            };
+            socket.on('msg', function (data) {
+                handleMessage(data);
+            });
+
+            function handleMessage(data) {
+                console.log(data.type);
+                switch (data.type) {
+                    case 'sdp-offer':
+                        console.log("SDP offer");
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                        peerConnection.createAnswer(function (sdp) {
+                            peerConnection.setLocalDescription(sdp);
+                            socket.emit('msg', {room: roomId, sdp: sdp, type: 'sdp-answer'});
+                        }, function (e) {
+                            console.log(e);
+                        });
+                        break;
+                    case 'sdp-answer':
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                        break;
+                    case 'ice':
+                        if (data.ice)
+                            peerConnection.addIceCandidate(new RTCIceCandidate(data.ice));
+                        break;
+                }
             }
 
             function gotStream(stream) {
                 trace('Received local stream');
                 console.log("get user media");
                 console.log(stream);
-           localVideo.mozSrcObject = stream;
-    localVideo.play();
-                VideoTracks = stream.getVideoTracks();
-                console.log(VideoTracks[0]);
-                trace('Local video videoWidth: ' + localVideo.videoWidth +
-                        'px,  videoHeight: ' + localVideo.videoHeight + 'px');
-                // localVideo.src = window.URL.createObjectURL(stream);
+                //localVideo.mozSrcObject = stream;
+
+                // VideoTracks = stream.getVideoTracks();
+                localVideo.src = window.URL.createObjectURL(stream);
                 localStream = stream;
                 callButton.disabled = false;
                 peerConnection.addStream(stream);
+
                 cameraEnabled = true;
             }
             function start() {
+
+                console.log(roomId);
+                console.log($scope.user.username);
+
+                socket.emit('init', {room: roomId, username: $scope.user.username});
                 trace('Requesting local stream');
                 startButton.disabled = true;
                 navigator.mediaDevices.getUserMedia({
@@ -124,38 +172,12 @@ angular.module('publicApp')
                 if (audioTracks.length > 0) {
                     trace('Using audio device: ' + audioTracks[0].label);
                 }
-                var servers = null;
-                pc1 = new RTCPeerConnection(servers);
-                trace('Created local peer connection object pc1');
-                pc1.onicecandidate = function (e) {
-                    onIceCandidate(pc1, e);
-                };
-                pc2 = new RTCPeerConnection(servers);
-                trace('Created remote peer connection object pc2');
-                pc2.onicecandidate = function (e) {
-                    onIceCandidate(pc2, e);
-                };
-                pc1.oniceconnectionstatechange = function (e) {
-                    onIceStateChange(pc1, e);
-                };
-                pc2.oniceconnectionstatechange = function (e) {
-                    onIceStateChange(pc2, e);
-                };
-                pc2.onaddstream = function (e)
-                {
-                    trace('pc2 received remote stream');
-                    console.log(pc2.getRemoteStreams());
-                    var streams = pc2.getRemoteStreams();
-                    remoteVideo.srcObject = streams[0];
-                    localVideo.classList.remove('active');
-                    trace('pc2 received remote stream');
-                }
 
-                pc1.addStream(localStream);
-                trace('Added local stream to pc1');
+
+                // may be wiil added for second time --- check this????
 
                 trace('pc1 createOffer start');
-                pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,
+                peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,
                         offerOptions);
             }
 
@@ -166,22 +188,52 @@ angular.module('publicApp')
             function onCreateOfferSuccess(desc) {
                 trace('Offer from pc1\n' + desc.sdp);
                 trace('pc1 setLocalDescription start');
-                pc1.setLocalDescription(desc, function () {
-                    onSetLocalSuccess(pc1);
-                }, onSetSessionDescriptionError);
-                trace('pc2 setRemoteDescription start');
-                pc2.setRemoteDescription(desc, function () {
-                    onSetRemoteSuccess(pc2);
-                }, onSetSessionDescriptionError);
+                var pc = getPeerConnection(id);
+                pc.createOffer(function (sdp) {
+                    pc.setLocalDescription(sdp);
+                    console.log('Creating an offer for', id);
+                    socket.emit('msg', {by: currentId, to: id, sdp: sdp, type: 'sdp-offer'});
+                }, function (e) {
+                    console.log(e);
+                },
+                        {mandatory: {OfferToReceiveVideo: true, OfferToReceiveAudio: true}});
+            }
+
+
+
+            peerConnection.setLocalDescription(desc, function () {
+                onSetLocalSuccess(peerConnection);
+                socket.emit('msg', {room: roomId, sdp: desc.sdp, type: 'sdp-offer', user: 'username'});
+            }, onSetSessionDescriptionError);
+
+
+            // accept the incoming offer of audio and video.
+
+            }
+
+            function Answer()
+            {
                 trace('pc2 createAnswer start');
                 // Since the 'remote' side has no media stream we need
                 // to pass in the right constraints in order for it to
-                // accept the incoming offer of audio and video.
-                pc2.createAnswer(onCreateAnswerSuccess, onCreateSessionDescriptionError);
+                var offer = getOfferFromFriend();
+                navigator.getUserMedia({video: true}, function (stream) {
+                    peerConnection.onaddstream({stream: stream});
+                    peerConnection.addStream(stream);
+
+                    peerConnection.setRemoteDescription(new RTCSessionDescription(offer), function () {
+                        peerConnection.createAnswer(function (answer) {
+                            peerConnection.setLocalDescription(new RTCSessionDescription(answer), function () {
+                                // send the answer to a server to be forwarded back to the caller (you)
+                            }, error);
+                        }, error);
+                    }, error);
+                });
             }
 
             function onSetLocalSuccess(pc) {
                 trace(getName(pc) + ' setLocalDescription complete');
+
             }
 
             function onSetRemoteSuccess(pc) {
@@ -200,19 +252,20 @@ angular.module('publicApp')
             function onCreateAnswerSuccess(desc) {
                 trace('Answer from pc2:\n' + desc.sdp);
                 trace('pc2 setLocalDescription start');
-                pc2.setLocalDescription(desc, function () {
-                    onSetLocalSuccess(pc2);
+                peerConnection.setLocalDescription(desc, function () {
+                    onSetLocalSuccess(peerConnection);
                 }, onSetSessionDescriptionError);
                 trace('pc1 setRemoteDescription start');
 
-                pc1.setRemoteDescription(desc, function () {
-                    onSetRemoteSuccess(pc1);
+                peerConnection.setRemoteDescription(desc, function () {
+                    onSetRemoteSuccess(peerConnection);
                 }, onSetSessionDescriptionError);
             }
 
             function onIceCandidate(pc, event) {
+                trace('On Ice Candidates' + event.candidate);
                 if (event.candidate) {
-                    getOtherPc(pc).addIceCandidate(new RTCIceCandidate(event.candidate),
+                    peerConnection.addIceCandidate(new RTCIceCandidate(event.candidate),
                             function () {
                                 onAddIceCandidateSuccess(pc);
                             },
@@ -220,6 +273,8 @@ angular.module('publicApp')
                                 onAddIceCandidateError(pc, err);
                             }
                     );
+                    $scope.users_connected = event.candidate.candidate;
+                    console.log($scope.users_connected);
                     trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
                 }
             }
@@ -248,5 +303,13 @@ angular.module('publicApp')
                 hangupButton.disabled = true;
                 callButton.disabled = false;
             }
+            function getName(pc) {
+                return pc
+            }
+
+            function getOtherPc(pc) {
+                //
+            }
+
 
         });

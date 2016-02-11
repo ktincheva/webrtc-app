@@ -16,7 +16,7 @@ angular.module('publicApp')
       'Karma'
     ];
     var gatherButton = document.querySelector('button#gather');
-v
+
             gatherButton.onclick = Connected.start;
             
   });
