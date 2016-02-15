@@ -24,7 +24,7 @@ socketio.listen(server, { log: true })
 
   socket.on('init', function (data) {
     console.log('socket on init');
- 
+   
     socketRoom = data.room;
    
     var room = rooms[socketRoom];

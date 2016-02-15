@@ -97,10 +97,28 @@ angular.module('publicApp')
 
                 onIceStateChange(peerConnection, e);
             };
+
             socket.on('msg', function (data) {
                 handleMessage(data);
             });
+            socket.on('created', function (data)
+            {
+                console.log('room created' + data);
 
+            });
+            
+            socket.on('joined', function(data)
+            {
+                console.log('room joined: ' + data)
+            });
+
+            socket.on('ready', function (data) {
+                console.log('socket ready: ' + data);
+            })
+            
+            socket.on('fill', function(data){
+                console.log('socket fill: '+data);
+            });
             function handleMessage(data) {
                 console.log(data.type);
                 switch (data.type) {
@@ -188,26 +206,17 @@ angular.module('publicApp')
             function onCreateOfferSuccess(desc) {
                 trace('Offer from pc1\n' + desc.sdp);
                 trace('pc1 setLocalDescription start');
-                var pc = getPeerConnection(id);
-                pc.createOffer(function (sdp) {
-                    pc.setLocalDescription(sdp);
-                    console.log('Creating an offer for', id);
-                    socket.emit('msg', {by: currentId, to: id, sdp: sdp, type: 'sdp-offer'});
-                }, function (e) {
-                    console.log(e);
-                },
-                        {mandatory: {OfferToReceiveVideo: true, OfferToReceiveAudio: true}});
-            }
+                // var pc = getPeerConnection(id);
 
 
 
-            peerConnection.setLocalDescription(desc, function () {
-                onSetLocalSuccess(peerConnection);
-                socket.emit('msg', {room: roomId, sdp: desc.sdp, type: 'sdp-offer', user: 'username'});
-            }, onSetSessionDescriptionError);
+                peerConnection.setLocalDescription(desc, function () {
+                    onSetLocalSuccess(peerConnection);
+                    socket.emit('msg', {room: roomId, sdp: desc.sdp, type: 'sdp-offer', user: 'username'});
+                }, onSetSessionDescriptionError);
 
 
-            // accept the incoming offer of audio and video.
+                // accept the incoming offer of audio and video.
 
             }
 

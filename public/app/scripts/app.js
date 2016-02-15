@@ -53,6 +53,11 @@ angular
                         templateUrl: 'views/connected.html',
                         controller: 'ConnectedCtrl'
                     })
+                    .when('/message', {
+                        templateUrl: 'views/chatapp.html',
+                        controller: 'ChatappCtrl'
+                    })
+
                     .otherwise({
                         redirectTo: '/room'
                     });
