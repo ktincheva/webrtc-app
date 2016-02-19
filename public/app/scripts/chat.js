@@ -29,7 +29,7 @@
         localVideo.classList.remove('active');
 
         console.log("on add stream");
-        console.log(evnt.stream);
+       // console.log(evnt.stream);
         remoteVideo.src = URL.createObjectURL(evnt.stream);
     };
 
@@ -62,8 +62,10 @@
         console.log(data.type);
         switch (data.type) {
             case 'sdp-offer':
+                data.sdp.type = 'offer';
                 peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
                 peerConnection.createAnswer(function (sdp) {
+                    
                     peerConnection.setLocalDescription(sdp);
                     socket.emit('msg', {room: roomId, sdp: sdp, type: 'sdp-answer'});
                 }, function (e) {
@@ -71,6 +73,7 @@
                 });
                 break;
             case 'sdp-answer':
+                console.log("sdp-answer");
                 peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
                 break;
             case 'ice':

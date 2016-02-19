@@ -4,24 +4,9 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/var/www/html/webrtc-app/public/app/scripts/controllers/chat.js</file>
-            <file>file:/var/www/html/webrtc-app/public/app/views/room.html</file>
-            <file>file:/var/www/html/webrtc-app/public/Gruntfile.js</file>
-            <file>file:/var/www/html/webrtc-app/public/app/scripts/services/room.js</file>
-            <file>file:/var/www/html/webrtc-app/public/app/views/main.html</file>
-            <file>file:/var/www/html/webrtc-app/public/app/scripts/services/videostream.js</file>
-            <file>file:/var/www/html/webrtc-app/public/app/scripts/controllers/room.js</file>
-            <file>file:/var/www/html/webrtc-app/public/app/index.html</file>
-            <file>file:/var/www/html/webrtc-app/public/app/scripts/chat.js</file>
-            <file>file:/var/www/html/webrtc-app/public/app/styles/styles.css</file>
-            <file>file:/var/www/html/webrtc-app/chat_server.js</file>
             <file>file:/var/www/html/webrtc-app/lib/server.js</file>
-            <file>file:/var/www/html/webrtc-app/public/app/scripts/services/io.js</file>
             <file>file:/var/www/html/webrtc-app/public/app/views/chat.html</file>
-            <file>file:/var/www/html/webrtc-app/public/app/scripts/app.js</file>
-            <file>file:/var/www/html/webrtc-app/index.js</file>
-            <file>file:/var/www/html/webrtc-app/public/app/scripts/controllers/main.js</file>
             <file>file:/var/www/html/webrtc-app/public/app/scripts/adapter.js</file>
-            <file>file:/var/www/html/webrtc-app/public/app/styles/main.css</file>
         </group>
     </open-files>
 </project-private>
