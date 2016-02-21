@@ -22,13 +22,18 @@
                         <label for="username">Username:</label>
                         <input id="username" name = "username" ng-model="user.username">This user: {{user| json}}
                     </div>
-                    <button id="startButton">Start</button>
+                    <button id="startButton">Connect</button>
                     <button id="callButton">Call</button>
                     <button id="hangupButton">Hang Up</button>
+                    <button id="disconnectButton">Disconnect</button>
                 </div>
-                <div id = "users_connected">
-                    {{users_connected}}
-                </div> 
+                <div>
+                    User: {{status}}
+                </div>    
+                Users connected:
+                <ul>
+                    <li ng-repeat="username in users">{{username}}</li>
+                </ul> 
 
 
 

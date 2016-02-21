@@ -13,16 +13,14 @@ angular.module('publicApp')
                 'AngularJS',
                 'Karma'
             ];
-            window.RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
-            window.URL = window.URL || window.mozURL || window.webkitURL;
+
             var startButton = document.getElementById('startButton');
             var callButton = document.getElementById('callButton');
             var hangupButton = document.getElementById('hangupButton');
+            var disconnectButton = document.getElementById('disconnectButton');
             var answerButton = document.getElementById('incomingAccept');
-            var usersList = document.getElementById('users_connected');
+          //  var usersList = document.getElementById('users_connected');
 
-
-            var startTime;
             var localVideo = document.getElementById('local-video');
             var remoteVideo = document.getElementById('remote-video');
             var iceConfig = {'iceServers': [{'url': 'stun:stun.l.google.com:19302'}]};
@@ -31,11 +29,7 @@ angular.module('publicApp')
 
             var peerConnection;
             var socket = io.connect(location.protocol + '//' + location.host);
-            var roomId = 2,
-                    clientConnected = false,
-                    offered = false,
-                    cameraEnabled = false,
-                    localObjectUrl;
+            var roomId = 2;
 
 
             var offerOptions = {
@@ -48,6 +42,7 @@ angular.module('publicApp')
             startButton.onclick = start;
             callButton.onclick = call;
             hangupButton.onclick = hangup;
+            disconnectButton.onclick =  disconnect;
 
 
             console.log("controller loaded event handlers");
@@ -62,21 +57,33 @@ angular.module('publicApp')
             {
                 console.log('room created');
                 console.log(data.socket);
+                updateUsersConnected(data.users, 'conneted')
+
             });
             socket.on('joined', function (data)
             {
                 console.log('room joined: ');
                 console.log(data.socket);
+                updateUsersConnected(data.users, 'conneted')
             });
             socket.on('ready', function (data) {
                 console.log('socket ready: ');
                 console.log(data);
-                usersList.innerHTML = data.users;
+                updateUsersConnected(data.users, 'conneted')
             })
 
             socket.on('fill', function (data) {
                 console.log('socket fill: ');
                 console.log(data.socket);
+                updateUsersConnected(data.users, 'conneted')
+            });
+            socket.on('userleaved', function (data)
+            {
+                console.log('userleaved');
+                console.log(data);
+                var status;
+                if(data.status) status = data.status
+                updateUsersConnected(data.users, status)
             });
 
             function handleMessage(data) {
@@ -141,12 +148,10 @@ angular.module('publicApp')
                 callButton.disabled = true;
                 hangupButton.disabled = false;
                 console.log('Starting call');
-                startTime = window.performance.now();
-
                 // may be wiil added for second time --- check this????
 
                 console.log('pc1 createOffer start');
-                peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,offerOptions );
+                peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
             }
 
             function createPeerConnetion(stream)
@@ -162,7 +167,7 @@ angular.module('publicApp')
                     console.log('On Ice Candidates' + event.candidate);
                     console.log('Generated candidate!');
                     socket.emit('msg', {type: 'ice', ice: event.candidate});
-                    console.log(getName(peerConnection) + ' ICE candidate: \n' + event.candidate.candidate);
+                    console.log('ICE candidate: \n' + event.candidate.candidate);
                 }
             }
 
@@ -228,13 +233,48 @@ angular.module('publicApp')
                 console.log('Remote video videoWidth: ' + this.videoWidth +
                         'px,  videoHeight: ' + this.videoHeight + 'px');
             });
-
+            function updateUsersConnected(data, status)
+            {
+                console.log(data);
+                console.log($scope.users);
+                console.log($scope.user.username);
+                $scope.users = data;
+                if (status) $scope.status = status;
+                $scope.$apply();
+                console.log($scope.users);
+            }
             function hangup() {
+                console.log("User Hangup");
+                console.log($scope.user.username);
+
+                socket.emit('userleave', {room: roomId, username: $scope.user.username})
+                hangupButton.disabled = true;
+                startButton.disabled = false;
+                //socket.disconnect();
+                connectionClose();
+                stopVideo();
+            }
+            function disconnect()
+            {
+                hangup();
+               // socket.disconnect();
+            }
+            function stopVideo()
+            {
+                localStream.getVideoTracks()[0].stop();
+                localStream.getAudioTracks()[0].stop();
+                localStream = null;
+                localVideo.pause();
+                //localVideo.remove();
 
             }
-            function getName(pc) {
-                return pc
+
+            function connectionClose()
+            {
+                peerConnection.close();
+                peerConnection = null;
             }
+
 
 
         });
