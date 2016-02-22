@@ -7,12 +7,14 @@ angular.module('publicApp')
                 'Karma'
             ];
             var rooms = ['room1', 'room2', 'room3'];
-            $scope.rooms = rooms;
-            console.log($scope.rooms);
+   
             
             //var rooms = io.sockets.adapter.rooms;
-            var socket = io.connect('http://localhost:5555');
+           var socket = io.connect(location.protocol + '//' + location.host);
            
+            console.log(socket.rooms);
+            $scope.rooms = rooms;
+            console.log($scope.rooms);
             // $scope.rooms = ['room1', 'room2', 'room3'];
             // on connection to server, ask for user's name with an anonymous callback
             socket.on('connect', function () {

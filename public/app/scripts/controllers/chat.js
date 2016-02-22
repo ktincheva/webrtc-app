@@ -19,11 +19,15 @@ angular.module('publicApp')
             var hangupButton = document.getElementById('hangupButton');
             var disconnectButton = document.getElementById('disconnectButton');
             var answerButton = document.getElementById('incomingAccept');
-          //  var usersList = document.getElementById('users_connected');
+            //  var usersList = document.getElementById('users_connected');
 
             var localVideo = document.getElementById('local-video');
             var remoteVideo = document.getElementById('remote-video');
-            var iceConfig = {'iceServers': [{'url': 'stun:stun.l.google.com:19302'}]};
+            var iceConfig = {'iceServers': [{
+                        'url': 'stun:stun.l.google.com:19302'
+                    }, {
+                        'urls': 'stun:stun.l.google.com:19302'
+                    }]};
             var localStream;
 
 
@@ -42,7 +46,7 @@ angular.module('publicApp')
             startButton.onclick = start;
             callButton.onclick = call;
             hangupButton.onclick = hangup;
-            disconnectButton.onclick =  disconnect;
+            disconnectButton.onclick = disconnect;
 
 
             console.log("controller loaded event handlers");
@@ -82,7 +86,8 @@ angular.module('publicApp')
                 console.log('userleaved');
                 console.log(data);
                 var status;
-                if(data.status) status = data.status
+                if (data.status)
+                    status = data.status
                 updateUsersConnected(data.users, status)
             });
 
@@ -236,10 +241,10 @@ angular.module('publicApp')
             function updateUsersConnected(data, status)
             {
                 console.log(data);
-                console.log($scope.users);
-                console.log($scope.user.username);
+
                 $scope.users = data;
-                if (status) $scope.status = status;
+                if (status)
+                    $scope.status = status;
                 $scope.$apply();
                 console.log($scope.users);
             }
@@ -257,7 +262,7 @@ angular.module('publicApp')
             function disconnect()
             {
                 hangup();
-               // socket.disconnect();
+                // socket.disconnect();
             }
             function stopVideo()
             {

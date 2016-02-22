@@ -1,60 +1,47 @@
-<!DOCTYPE html>
-<!doctype html>
-<html>
-    <head>
-        <title>WebRTC demo</title>
-        <link rel="stylesheet" href="styles/styles.css">
-    </head>
-    <body>
-
-        <div class  = "container">
-            <div class = "row-fluid">
-                <div class="iphone-frame">
-                    <div class="screen-wrapper">
-                        <video class="remote-video active" autoplay id="remote-video"></video>
-                        <video class="local-video active" autoplay id="local-video" muted></video>
-                        <input type="text" id="url-input" disabled>
-
-                    </div>
-                </div>
-                <div>
-                    <div>
-                        <label for="username">Username:</label>
-                        <input id="username" name = "username" ng-model="user.username">This user: {{user| json}}
-                    </div>
-                    <button id="startButton">Connect</button>
-                    <button id="callButton">Call</button>
-                    <button id="hangupButton">Hang Up</button>
-                    <button id="disconnectButton">Disconnect</button>
-                </div>
-                <div>
-                    User: {{status}}
-                </div>    
-                Users connected:
-                <ul>
-                    <li ng-repeat="username in users">{{username}}</li>
-                </ul> 
-
-
-
-                <div class="modal" id="incomingCall" tabindex="-1" role="dialog"
-                     aria-labelledby="incomingCall" aria-hidden="true">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                        <h3>Incoming Call</h3>
-                    </div>
-                    <div class="modal-body">
-                        <img src="img/incoming.png"/><br/><p>&nbsp;</p>
-                        <p>You have an incoming call from <span id="incomingUser"></span></p>
-                        <audio id="incomingRing" src="http://localhost/ring.ogg" loop/>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn" data-dismiss="modal" aria-hidden="true">Reject</button>
-                        <button id="incomingAccept" class="btn btn-primary">Accept</button>
-                    </div>
-                </div>
+<div class  = "container">
+    <div class = "row-fluid">
+        <div class="iphone-frame">
+            <div class="screen-wrapper">
+                <video class="remote-video active" autoplay id="remote-video"></video>
+                <video class="local-video active" autoplay id="local-video" muted></video>
+                <input type="text" id="url-input" disabled>
 
             </div>
         </div>
-    </body>
-</html>
+        <div>
+            <div>
+                <label for="username">Username:</label>
+                <input id="username" name = "username" ng-model="user.username">This user: {{user| json}}
+            </div>
+            <button id="startButton">Connect</button>
+            <button id="callButton">Call</button>
+            <button id="hangupButton">Hang Up</button>
+            <button id="disconnectButton">Disconnect</button>
+        </div>
+        <div>
+            User: {{status}}
+        </div>    
+        Users connected:
+        <ul>
+            <li ng-repeat="username in users">{{username}}</li>
+        </ul>
+
+        <div class="modal modal-md" id="incomingCall" tabindex="-1" role="dialog" aria-labelledby="incomingCall" aria-hidden="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3>Incoming Call</h3>
+                </div>
+                <div class="modal-body">
+                    <img src="img/incoming.png"/><br/><p>&nbsp;</p>
+                    <p>You have an incoming call from <span id="incomingUser"></span></p>
+                    <audio id="incomingRing" src="http://localhost/ring.ogg" loop/>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Reject</button>
+                    <button id="incomingAccept" class="btn btn-primary">Accept</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

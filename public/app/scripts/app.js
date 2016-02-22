@@ -64,6 +64,7 @@ angular
         })
         .constant('config', {
             // Change it for your app URL
-            SIGNALIG_SERVER_URL: 'http://192.168.1.5:5555'
+            //SIGNALIG_SERVER_URL: 'http://192.168.1.5:5555'
+            SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555'
         });
 
