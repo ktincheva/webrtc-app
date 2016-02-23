@@ -1,22 +1,27 @@
-<!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
+<div class="container">
+    <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
 
-<div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
-    <b>ROOMS</b>
-    <p>Current Room:<span class="current_room"> {{current_room}}</span></p>
-    <div id="rooms" ng-repeat="room in rooms">
-        <a id="link-2" ng-click="switchRoom('{{room}}')">{{room}}</a><br />   
+    <div class = "row-fliud">
+        <div class="col-sm-9">
+            <uib-tabset justified="true">
+                <uib-tab ng-repeat="room in rooms" heading="{{room}}" select="switchRoom(room)">
+                    <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
+                    <div id="conversation-{{room}}"></div>
+                    <input id="data-{{room}}" class="message" ng-model="message.text"/>
+                    <input type="button" class = "datasend" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
+                </uib-tab> 
+            </uib-tabset>
+        </div> 
+
+
+        <div class="col-sm-3">
+            <h2>List of users online</h2>
+            <ul ng-repeat="user in users">
+                <li>{{user}}<li>
+            </ul>    
+        </div>
     </div>
+    {{message}}
 </div>
-<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
-    <div id="conversation"></div>
-    <input id="data" style="width:200px;" />
-    <input type="button" id="datasend" value="send" />
-</div>
-
 
 

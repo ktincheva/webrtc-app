@@ -19,25 +19,27 @@ angular.module('publicApp')
             // on connection to server, ask for user's name with an anonymous callback
             socket.on('connect', function () {
                 console.log("Connect to the chat")
-              
                 // call the server-side function 'adduser' and send one parameter (value of prompt)
                 socket.emit('setup', rooms);
                 socket.emit('adduser', prompt("What's your name?"));
                
             });
-            
-            console.log($scope.rooms)
             // listener, whenever the server emits 'updatechat', this updates the chat body
             socket.on('updatechat', function (username, data) {
-                $('#conversation').append('<b>' + username + ':</b> ' + data + '<br>');
+                console.log(data);
+             
+                $('#conversation-'+data.room).append('<b>' + username + ':</b> ' + data.text + '<br>');
             });
             // listener, whenever the server emits 'updaterooms', this updates the room the client is in
-            socket.on('updaterooms', function (rooms, current_room) {
-                console.log("Update rooms "+rooms)
+            socket.on('updaterooms', function (rooms, current_room, users) {
+                console.log("Update rooms ");
+                console.log(users);
+                console.log(rooms);
+                $scope.users = users;
+                $scope.$apply();
                 console.log(current_room);
                 $('.current_room').html(current_room)
-                
-                console.log($scope.current_room);
+                $scope.current_room = current_room;
             });
             console.log(rooms);
             console.log($scope.rooms)
@@ -45,19 +47,19 @@ angular.module('publicApp')
                 console.log('switch to room: ' + room)
                 socket.emit('switchRoom', room);
             }
-      
+            $scope.senddata = function(data, room){
+                    console.log(data);
+                    $('#data-'+room).val('');
+                    data.room = room;
+                    // tell server to execute 'sendchat' and send along one parameter
+                    socket.emit('sendchat', data);
+            }
             function init() {
                 console.log('documet ready');
                 // when the client clicks SEND
                 console.log($scope.rooms);
-                $('#datasend').click(function () {
-                    var message = $('#data').val();
-                    $('#data').val('');
-                    // tell server to execute 'sendchat' and send along one parameter
-                    socket.emit('sendchat', message);
-                });
                 // when the client hits ENTER on their keyboard
-                $('#data').keypress(function (e) {
+                $('.message').keypress(function (e) {
                     if (e.which == 13) {
                         $(this).blur();
                         $('#datasend').focus().click();
