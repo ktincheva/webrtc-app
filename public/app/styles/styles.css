@@ -59,3 +59,7 @@ video {
 
     
 }
+
+.call_icon, .hangup_icon{
+    width: 32px;
+}

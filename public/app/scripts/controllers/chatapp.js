@@ -33,15 +33,15 @@ angular.module('publicApp')
             // listener, whenever the server emits 'updaterooms', this updates the room the client is in
             socket.on('updaterooms', function (rooms, current_room, users) {
                 console.log("Update rooms ");
-                console.log(users);
-                console.log(rooms);
-                $scope.users = users;
+               
+               
+                $scope.users = users.users;
                 $scope.$apply();
+                console.log($scope.users);
                 console.log(current_room);
                 $('.current_room').html(current_room)
                 $scope.current_room = current_room;
             });
-            console.log(rooms);
             console.log($scope.rooms)
             $scope.switchRoom = function (room) {
                 console.log('switch to room: ' + room)
