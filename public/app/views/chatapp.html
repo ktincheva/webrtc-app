@@ -1,19 +1,35 @@
 <div class="container">
     <div class="row-fliud">
-    <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
+        <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
     </div>
     <div class="row-fliud">
-        <label for="username">Username:</label>
-        <input id="username" name = "username" ng-model="user.username">This user: {{user| json}}
+        <form name = "loginForm">
+            <label for="username">Username:</label>
+            <input id="username" name = "username" ng-model="user.username" ng-minlength="5"ng-maxlength="20" required>
+            <input type="submit" id="loginButton" class="btn btn-primary" value="Connect" ng-click="login()"/>
+        </form>
+        <div ng-messages="loginForm.username.$error" style="color:maroon" role="alert">
+            <div ng-message="required">You did not enter a field</div>
+            <div ng-message="minlength">Your field is too short</div>
+            <div ng-message="maxlength">Your field is too long</div>
+        </div>
+        This user: {{user| json}}
     </div>
+
+
     <div class = "row-fliud">
         <div class="col-sm-9">
             <uib-tabset justified="true">
                 <uib-tab ng-repeat="room in rooms" heading="{{room}}" select="switchRoom(room)">
                     <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
                     <div id="conversation-{{room}}"></div>
-                    <input id="data-{{room}}" class="message" ng-model="message.text"/>
-                    <input type="button" class = "datasend" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
+                    <textarea rows="2" cols="40" id="data-{{room}}" class="message" ng-model="message.text" ng-trim="true"/></textarea>
+
+
+
+                    <div ng-bind-html="message.text | smilies"></div>
+                    <input type="button" class = "datasend btn btn-success" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
+
                 </uib-tab> 
             </uib-tabset>
         </div> 
@@ -22,16 +38,36 @@
         <div class="col-sm-3">
             <h2>List of users online</h2>
             <ul ng-repeat="user in users">
-                <li>
+                <li ng-if="user.username != username">
                     <div>
                         <span>{{user.username}}</span>
                         <span><a href="/#chat/2"><img src = "./images/video_call_icon.png" class="call_icon"/></a></span>
                     </div>
-                </li>
             </ul>    
         </div>
+
+
+
     </div>
+
     {{message}}
+  <pre ng-bind-html="message | smilies"></pre>
+
+  <div class="input-group">
+    <span class="input-group-addon" smilies-selector="message" smilies-placement="bottom" smilies-title="Smilies"></span>
+    <input ng-model="message" focus-on-change="message" class="form-control">
+  </div>
+  
+    <h4>Formatting codes playground</h4>
+  <p class="form-group">
+    <label>Define your format</label>
+    <input type="text" ng-model="format" class="form-control">
+  </p>
+  <p class="form-group">
+    <label>Result</label>
+    <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="date" />
+  </p>
 </div>
+   
 
 

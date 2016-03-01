@@ -16,7 +16,11 @@ angular
             'ngRoute',
             'ngSanitize',
             'ngTouch',
-            'ui.bootstrap'
+            'ui.bootstrap',
+            'ngMessages',
+            'angular-smilies',
+            'ui.bootstrap.tpls',
+            'ui.bootstrap.modal'
         ])
         .config(function ($routeProvider) {
             $routeProvider
@@ -68,4 +72,5 @@ angular
            // SIGNALIG_SERVER_URL: 'http://192.168.1.5:5555'
             SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555'
         });
+        
 
