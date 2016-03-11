@@ -23,11 +23,16 @@
                 <uib-tab ng-repeat="room in rooms" heading="{{room}}" select="switchRoom(room)">
                     <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
                     <div id="conversation-{{room}}"></div>
-                    <textarea rows="2" cols="40" id="data-{{room}}" class="message" ng-model="message.text" ng-trim="true"/></textarea>
+                
 
 
+                    <p ng-bind-html="message | smilies"></p>
 
-                    <div ng-bind-html="message.text | smilies"></div>
+<div class="input-group">
+  <input ng-model="message" focus-on-change="message" class="form-control">
+  <span class="input-group-addon" smilies-selector="message" smilies-placement="right" smilies-title="Smilies"></span>
+</div>
+
                     <input type="button" class = "datasend btn btn-success" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
 
                 </uib-tab> 
@@ -51,23 +56,12 @@
     </div>
 
     {{message}}
-  <pre ng-bind-html="message | smilies"></pre>
+    <pre ng-bind-html="message | smilies"></pre>
 
-  <div class="input-group">
-    <span class="input-group-addon" smilies-selector="message" smilies-placement="bottom" smilies-title="Smilies"></span>
-    <input ng-model="message" focus-on-change="message" class="form-control">
-  </div>
-  
-    <h4>Formatting codes playground</h4>
-  <p class="form-group">
-    <label>Define your format</label>
-    <input type="text" ng-model="format" class="form-control">
-  </p>
-  <p class="form-group">
-    <label>Result</label>
-    <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="date" />
-  </p>
+
+
+
 </div>
-   
+
 
 
