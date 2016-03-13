@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('publicApp')
-        .factory('ChatApp', function ($rootScope) {
+        .factory('ChatApp', function ($rootScope, Smilies) {
            
             
 

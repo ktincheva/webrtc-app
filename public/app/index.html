@@ -1,160 +1,95 @@
 <!DOCTYPE html>
-<html ng-app="app">
-<head>
-  <meta charset="utf-8">
+<html ng-app="publicApp">
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+        <!-- build:css(.) styles/vendor.css -->
+        <!-- bower:css -->
+        <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="bower_components/angular-bootstrap/ui-bootstrap-csp.css" />
+        <link href="bower_components/angular-smilies/dist/angular-smilies.css" rel="stylesheet" type="text/css"/>
+        <link href="bower_components/angular-smilies/dist/angular-smilies-embed.css" rel="stylesheet" type="text/css"/>
+        <!-- endbower -->
+        <!-- endbuild -->
+        <!-- build:css(.tmp) styles/main.css -->
+        <link rel="stylesheet" href="styles/main.css">
+        <link rel="stylesheet" href="styles/styles.css">
+        
+        <script src="bower_components/jquery/dist/jquery.js"></script>
+        <script src="bower_components/es5-shim/es5-shim.js"></script>
+       
+        <script src="bower_components/angular/angular.js" type="text/javascript"></script>
+        <script src="bower_components/json3/lib/json3.js"></script>
+        <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script> 
+        <script src="bower_components/angular-bootstrap/ui-bootstrap.js" type="text/javascript"></script>
+        <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+        <script src="bower_components/angular-animate/angular-animate.js"></script>
+        <script src="bower_components/angular-resource/angular-resource.js"></script>
+        <script src="bower_components/angular-cookies/angular-cookies.js"></script>
+      
+        <script src="bower_components/angular-sanitize/angular-sanitize.min.js" type="text/javascript"></script>
+        <script src="bower_components/angular-route/angular-route.js"></script>
+     
+        <script src="bower_components/angular-touch/angular-touch.js"></script>
+        <script src="bower_components/eventemitter/src/EventEmitter.js"></script>
+        <script src="bower_components/angular-messages/angular-messages.min.js"></script>
+        <!-- endbower -->
+        <!-- endbower -->
+        <!-- endbuild -->
+        <script src="/socket.io/socket.io.js"></script>
 
- 
-  <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
-  <link href="bower_components/angular-smilies/dist/angular-smilies-embed.min.css" rel="stylesheet" type="text/css"/>
-</head>
+        <!-- build:js({.tmp,app}) scripts/scripts.js -->
 
-<body>
+        <script src="scripts/adapter.js"></script>
+        <script src="scripts/app.js"></script>
+        <script src="scripts/controllers/room.js"></script>
+        <script src="scripts/controllers/chat.js"></script> 
+        <script src="scripts/services/room.js"></script>
+        <script src="scripts/services/io.js"></script>
+        <script src="scripts/services/videostream.js"></script>
+        <script src="scripts/directives/videoplayer.js"></script>
+        <script src="scripts/controllers/connected.js"></script>
+        <script src="scripts/services/connected.js"></script>
 
-<div class="container" ng-controller="controller">
-  <hr />
-    <h4>Triggers</h4>
-    <p>
-    </p>
-    <input type="text" ng-model="message" value="Click me!" uib-popover="I appeared on focus! Click away and I'll vanish..."  popover-trigger="focus" class="form-control">
-<button class="smiley-smile smilies-selector"  smilies-selector="message" uib-popover-template="dynamicPopover.templateUrl" popover-title="{{dynamicPopover.title}}"   popover-trigger="focus" class="form-control">
-</div>
+        <script src="scripts/controllers/messaging.js"></script>
+        <script src="scripts/services/messaging.js"></script>
 
-<script src="bower_components/angular/angular.min.js" type="text/javascript"></script>
-<script src="bower_components/angular-sanitize/angular-sanitize.min.js" type="text/javascript"></script>
-<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js" type="text/javascript"></script>
-
-<!-- <script src="../bower_components/angular-strap/dist/angular-strap.min.js"></script> -->
-<!-- <script src="../bower_components/angular-strap/dist/angular-strap.tpl.min.js"></script> -->
-
-
-
-<script>
-  var app = angular.module('app', [
-    'ngSanitize',
-    'ui.bootstrap', // Angular UI Bootstrap
-    //'mgcrea.ngStrap', // Angular Strap
-    'angular-smilies'
-  ]);
-
-  app.controller('controller', function($scope) {
-     $scope.dynamicPopover = {
-    content: 'Hello, World!',
-    templateUrl: 'myPopoverTemplate.html',
-    title: 'Title'
-  };
-
-  $scope.placement = {
-    options: [
-      'top',
-      'top-left',
-      'top-right',
-      'bottom',
-      'bottom-left',
-      'bottom-right',
-      'left',
-      'left-top',
-      'left-bottom',
-      'right',
-      'right-top',
-      'right-bottom'
-    ],
-    selected: 'top'
-  };
-  });
-  var
-    main = "smile",
-    smilies = ["biggrin","confused","cool","cry","eek","evil","like","lol","love","mad","mrgreen","neutral","question","razz","redface","rolleyes","sad","smile","surprised","thumbdown","thumbup","twisted","wink"],
-    shorts = {":D":"biggrin",":-D":"biggrin",":S":"confused",":-S":"confused",";(":"cry",";-(":"cry","OO":"eek","<3":"like","^^":"lol",":|":"neutral",":-|":"neutral",":P":"razz",":-P":"razz",":(":"sad",":-(":"sad",":)":"smile",":-)":"smile",":O":"surprised",":-O":"surprised",";)":"wink",";-)":"wink"}
-  
-  angular.module("app")
-        .directive('smiliesSelector', ['$timeout', function($timeout) {
-        var templateUrl;
-        try {
-            angular.module('ui.bootstrap.popover');
-            templateUrl = 'template/smilies/button-a.html';
-        }
-        catch(e) {
-            try {
-                angular.module('mgcrea.ngStrap.popover');
-                templateUrl = 'template/smilies/button-b.html';
+        <script src="scripts/controllers/chatapp.js"></script>
+        <script src="scripts/services/chatapp.js"></script>
+        <script src="scripts/services/smilies.js"></script>
+        <!-- endbuild -->
+           <style>
+            .smilies-button{
+                border: none;
             }
-            catch(e) {
-                console.error('No Popover module found');
-                return {};
-            }
-        }
 
-        return {
-            restrict: 'A',
-            templateUrl: templateUrl,
-            scope: {
-                source: '=smiliesSelector',
-                placement: '@smiliesPlacement',
-                title: '@smiliesTitle'
-            },
-            link: function($scope, el) {
-                $scope.smilies = smilies;
+        </style> 
+    </head>
+<body >
 
-                $scope.append = function(smiley) {
-                    $scope.source+= ' :'+smiley+': ';
+        <div class="container">
+            <hr />
+            <div class="ng-view"></div>  
+      <div ng-bind-html="trustedHtml"></div>      
+<pre ng-bind-html="message | smilies"></pre>
 
-                    $timeout(function() {
-                        el.children('i').triggerHandler('click'); // close the popover
-                    });
-                };
-            }
-        };
+  <div class="input-group">
+    <span class="input-group-addon" smilies-selector="message" smilies-placement="bottom" smilies-title="Smilies"></span>
+    <input ng-model="message" focus-on-change="message" class="form-control">
+  </div>
 
-    }])
-     /* helper directive for input focusing */
-    .directive('focusOnChange', function() {
-        return {
-            restrict: 'A',
-            link: function($scope, el, attrs) {
-                $scope.$watch(attrs.focusOnChange, function() {
-                    el[0].focus();
-                });
-            }
-        };
-    })
-    /* popover template */
-    .run(['$templateCache', function($templateCache) {
-        // use ng-init because popover-template only accept a variable
-        $templateCache.put('template/smilies/button-a.html',
-            '<i class="smiley-'+ main +' smilies-selector" '+
-                'ng-init="smiliesTemplate = \'template/smilies/popover-a.html\'" '+
-                'popover-template="smiliesTemplate" '+
-                'popover-placement="{{!placement && \'left\' || placement}}" '+
-                'popover-title="{{title}}"></i>'
-        );
-        $templateCache.put('template/smilies/button-b.html',
-            '<i class="smiley-'+ main +' smilies-selector" bs-popover '+
-                'data-template="template/smilies/popover-b.html" '+
-                'data-placement="{{!placement && \'left\' || placement}}" '+
-                'title="{{title}}"></i>'
-        );
-        $templateCache.put('template/smilies/popover-a.html',
-            '<div ng-model="smilies" class="smilies-selector-content">'+
-              '<i class="smiley-{{smiley}}" ng-repeat="smiley in smilies" ng-click="append(smiley)"></i>'+
-            '</div>'
-        );
-        $templateCache.put('template/smilies/popover-b.html',
-            '<div class="popover" tabindex="-1">'+
-                '<div class="arrow"></div>'+
-                '<h3 class="popover-title" ng-bind-html="title" ng-show="title"></h3>'+
-                '<div class="popover-content">'+
-                    $templateCache.get('template/smilies/popover-a.html') +
-                '</div>'+
-            '</div>'
-        );
-    }]);
-</script>
-   <script type="text/ng-template" id="myPopoverTemplate.html">
-        <i class="smiley-'+ main +' smilies-selector" '+
-                'ng-init="smiliesTemplate = \'template/smilies/popover-a.html\'" '+
-                'popover-template="smiliesTemplate" '+
-                'popover-placement="{{!placement && \'left\' || placement}}" '+
-                'popover-title="{{title}}"></i>
-    </script>
+        </div>
+
+
+    <!-- <script src="../bower_components/angular-strap/dist/angular-strap.min.js"></script> -->
+    <!-- <script src="../bower_components/angular-strap/dist/angular-strap.tpl.min.js"></script> -->
+
+
+
+
+
 </body>
 </html>
