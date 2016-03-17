@@ -8,8 +8,8 @@
  *
  * Main module of the application.
  */
-angular
-        .module('publicApp', [
+console.log("app started");
+var app = angular.module('publicApp', [
             'ngAnimate',
             'ngCookies',
             'ngResource',
@@ -18,7 +18,6 @@ angular
             'ngTouch',
             'ui.bootstrap',
             'ngMessages',
-            'angular-smilies',
             'ui.bootstrap.tpls',
             'ui.bootstrap.modal'
         ])
@@ -69,8 +68,7 @@ angular
         })
         .constant('config', {
             // Change it for your app URL
-           // SIGNALIG_SERVER_URL: 'http://192.168.1.5:5555'
-            SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555'
+            SIGNALIG_SERVER_URL: 'http://192.168.1.6:5555'
+           // SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555'
         });
-        
-
+      
