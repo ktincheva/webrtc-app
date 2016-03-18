@@ -177,7 +177,7 @@ angular.module('publicApp')
             }
 
             function onAddStream(event) {
-                localVideo.classList.remove('active');
+                localVideo.classList.remove('active-video');
                 console.log("on add stream");
                 console.log(event.stream);
                 remoteVideo.src = window.URL.createObjectURL(event.stream);
