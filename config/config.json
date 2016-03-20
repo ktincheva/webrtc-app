@@ -1,3 +1,4 @@
 {
-    "PORT": 5555
+    "PORT": 5555,
+    "max_connections":5
 }

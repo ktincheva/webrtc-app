@@ -23,15 +23,13 @@
                 <uib-tab ng-repeat="room in rooms" heading="{{room}}" select="switchRoom(room)">
                     <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
                     <div id="conversation-{{room}}"></div>
-                
+                   
 
-
-                    <p ng-bind-html="message | smilies"></p>
-
-<div class="input-group">
-  <input ng-model="message" focus-on-change="message" class="form-control">
-  <span class="input-group-addon" smilies-selector="message" smilies-placement="right" smilies-title="Smilies"></span>
-</div>
+                   <div class="input-group">
+                        <input ng-model="message.text" focus-on-change="message" class="form-control">
+                        <span class="input-group-addon" smilies-selector="message.text" smilies-placement="right" smilies-title="Smilies"></span>
+                    </div>
+                   
 
                     <input type="button" class = "datasend btn btn-success" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
 
@@ -46,7 +44,7 @@
                 <li ng-if="user.username != username">
                     <div>
                         <span>{{user.username}}</span>
-                        <span><a href="/#chat/2"><img src = "./images/video_call_icon.png" class="call_icon"/></a></span>
+                        <span><a href="/#chat/2/{{user.username}}"><img src = "./images/video_call_icon.png" class="call_icon"/></a></span>
                     </div>
             </ul>    
         </div>
@@ -56,6 +54,8 @@
     </div>
 
     {{message}}
+
+
     <pre ng-bind-html="message | smilies"></pre>
 
 

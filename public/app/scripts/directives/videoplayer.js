@@ -6,23 +6,18 @@
  * @description
  * # videoPlayer
  */
+
+var video_template = '<div> <video class="remote-video free" autoplay id="remote-video"></video>adsadadadsadad</div>';
 angular.module('publicApp')
- .directive('videoPlayer', function ($sce) {
-    return {
-      template: '<div><video ng-src="" autoplay></video></div>',
-      restrict: 'E',
-      replace: true,
-      scope: {
-        vidSrc: '@'
-      },
-      link: function (scope) {
-        console.log('Initializing video-player');
-        scope.trustSrc = function () {
-          if (!scope.vidSrc) {
-            return undefined;
-          }
-          return $sce.trustAsResourceUrl(scope.vidSrc);
-        };
-      }
-    };
-  });
+        .directive('remoteVideoPlayers', function (config) {
+            var tmpl = '';
+            console.log("init video objects" + config.max_connections);
+            for (var i =0; i < 5; i++)
+            {
+                tmpl += video_template
+            }
+            return {
+                template: tmpl
+            }
+        });
+
