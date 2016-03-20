@@ -8,19 +8,19 @@
  *
  * Main module of the application.
  */
-console.log("app started");
+
 var app = angular.module('publicApp', [
-            'ngAnimate',
-            'ngCookies',
-            'ngResource',
-            'ngRoute',
-            'ngSanitize',
-            'ngTouch',
-            'ui.bootstrap',
-            'ngMessages',
-            'ui.bootstrap.tpls',
-            'ui.bootstrap.modal'
-        ])
+    'ngAnimate',
+    'ngCookies',
+    'ngResource',
+    'ngRoute',
+    'ngSanitize',
+    'ngTouch',
+    'ui.bootstrap',
+    'ngMessages',
+    'ui.bootstrap.tpls',
+    'ui.bootstrap.modal'
+])
         .config(function ($routeProvider) {
             $routeProvider
                     .when('/', {
@@ -45,6 +45,10 @@ var app = angular.module('publicApp', [
                         templateUrl: 'views/chat.html',
                         controller: 'ChatCtrl'
                     })
+                    .when('/chat/:roomId/:userId/:remoteUserId', {
+                        templateUrl: 'views/chat.html',
+                        controller: 'ChatCtrl'
+                    })
                     .when('/messaging', {
                         templateUrl: 'views/messaging_rooms.html',
                         controller: 'MessagingCtrl'
@@ -61,14 +65,18 @@ var app = angular.module('publicApp', [
                         templateUrl: 'views/chatapp.html',
                         controller: 'ChatappCtrl'
                     })
-
+                    
                     .otherwise({
                         redirectTo: '/room'
                     });
         })
         .constant('config', {
             // Change it for your app URL
-          //  SIGNALIG_SERVER_URL: 'http://192.168.1.6:5555'
-            SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555'
+            SIGNALIG_SERVER_URL: 'https://192.168.1.6:5555',
+            max_connections:5
+                    //SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555'
+        })
+        .run(function () {
+            
+            
         });
-      

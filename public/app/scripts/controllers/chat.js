@@ -7,7 +7,7 @@
  * Controller of the publicApp
  */
 angular.module('publicApp')
-        .controller('ChatCtrl', function ($sce, $location, $routeParams, $scope) {
+        .controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, config) {
             this.awesomeThings = [
                 'HTML5 Boilerplate',
                 'AngularJS',
@@ -29,9 +29,10 @@ angular.module('publicApp')
                         'urls': 'stun:stun.l.google.com:19302'
                     }]};
             var localStream;
-
+            var errors = {};
 
             var peerConnection;
+            var peerConnections = {};
             var socket = io.connect(location.protocol + '//' + location.host);
             var roomId = 2;
 
@@ -40,15 +41,6 @@ angular.module('publicApp')
                 offerToReceiveAudio: 1,
                 offerToReceiveVideo: 1
             };
-
-            callButton.disabled = true;
-            hangupButton.disabled = true;
-            startButton.onclick = start;
-            callButton.onclick = call;
-            hangupButton.onclick = hangup;
-            disconnectButton.onclick = disconnect;
-
-
             console.log("controller loaded event handlers");
             /* peerConnection.oniceconnectionstatechange = function (e) {
              onIceStateChange(peerConnection, e);
@@ -91,7 +83,7 @@ angular.module('publicApp')
                 updateUsersConnected(data.users, status)
             });
 
-            function handleMessage(data) {
+            var handleMessage = function(data) {
                 console.log("Type of Message received " + data.type)
                 switch (data.type) {
                     case 'sdp-offer':
@@ -99,12 +91,12 @@ angular.module('publicApp')
                         console.log(data.sdp);
                         $("#incomingCall").show();
                         answerButton.onclick = answer(data.sdp);
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
                         break;
                     case 'sdp-answer':
-
+                        
                         console.log(data.sdp);
-                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp)); 
                         //{
                         //console.log("Call established");
                         //}, function (e) {
@@ -112,84 +104,94 @@ angular.module('publicApp')
                         //});
                         break;
                     case 'ice':
-                        console.log("On ice message received");
-                        console.log(data.ice.candidate);
                         if (data.ice)
-                            peerConnection.addIceCandidate(new RTCIceCandidate(data.ice));
+                        { 
+                            var candidate = new RTCIceCandidate(data.ice);
+                            console.log(candidate);
+                            console.log(peerConnection.RTCPeerConnectionState);
+                            peerConnection.addIceCandidate(candidate);
+                        }
                         break;
                 }
             }
 
 
 
-            function start() {
-                console.log(roomId);
-                console.log($scope.user.username);
-                console.log('Requesting local stream');
+            var start = function () {
                 startButton.disabled = true;
+                
                 getUserMedia({
                     audio: true,
                     video: true
-                }, gotStream, function (e) {
+                }, getStream, function (e) {
                     alert('getUserMedia() error: ' + e.name);
                 })
             }
 
-            function gotStream(stream) {
-                console.log('Received local stream');
-                console.log("get user media")
+            var getStream = function (stream) {
                 localStream = stream;
                 console.log(stream);
                 var streamUrl = window.URL.createObjectURL(stream);
                 localVideo.src = streamUrl;
+                localVideo.srcObject = stream;
                 callButton.disabled = false;
                 callButton.style.backgroundColor = 'green';
-                socket.emit('init', {room: roomId, username: $scope.user.username});
-                createPeerConnetion(stream);
+                getPeerConnetion(stream);
+               
+               // peerConnection.onaddstream = onAddStream;
+                if ($scope.user.username)
+                {
+                    socket.emit('init', {room: roomId, username: $scope.user.username});
+                   
+                } else {
+                    $scope.errors.push("Missing user name");
+                }
             }
 
-            function call() {
-
+            var call = function() {
                 callButton.disabled = true;
                 hangupButton.disabled = false;
                 console.log('Starting call');
+               
                 // may be wiil added for second time --- check this????
-
                 console.log('pc1 createOffer start');
                 peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
             }
-
-            function createPeerConnetion(stream)
+            var onAddStream = function(event) {
+               // localVideo.classList.remove('active-video');
+                console.log("on add stream");
+                console.log(event.stream);
+                /*var vid = document.createElement("video");
+                
+                vid.src = window.URL.createObjectURL(event.stream);*/
+                remoteVideo.src = window.URL.createObjectURL(event.stream)
+                remoteVideo.srcObject = event.stream;
+                remoteVideo.onloadedmetadata = function (e) {
+                    remoteVideo.play();
+                };
+            }
+            var getPeerConnetion = function(stream)
             {
                 peerConnection = new RTCPeerConnection(iceConfig)
                 peerConnection.onicecandidate = onIceCandidate;
                 peerConnection.addStream(stream);
                 peerConnection.onaddstream = onAddStream;
             }
-            function onIceCandidate(event) {
+            
+            var onIceCandidate = function(event) {
+                console.log('On Ice Candidates');
                 console.log(event.candidate);
-                if (event.candidate) {
-                    console.log('On Ice Candidates' + event.candidate);
-                    console.log('Generated candidate!');
-                    socket.emit('msg', {type: 'ice', ice: event.candidate});
-                    console.log('ICE candidate: \n' + event.candidate.candidate);
+                if (event.candidate) {                  
+                    socket.emit('msg', {type: 'ice', ice: event.candidate}); 
                 }
             }
 
-            function onAddStream(event) {
-                localVideo.classList.remove('active-video');
-                console.log("on add stream");
-                console.log(event.stream);
-                remoteVideo.src = window.URL.createObjectURL(event.stream);
-                remoteVideo.onloadedmetadata = function (e) {
-                    remoteVideo.play();
-                };
-            }
-            function onCreateSessionDescriptionError(error) {
+            
+            var onCreateSessionDescriptionError = function(error) {
                 console.log('Failed to create session description: ' + error.toString());
             }
 
-            function onCreateOfferSuccess(desc) {
+            var onCreateOfferSuccess =function(desc) {
                 console.log('pc1 setLocalDescription start');
                 // var pc = getPeerConnection(id);
                 console.log(desc);
@@ -197,7 +199,7 @@ angular.module('publicApp')
                 socket.emit('msg', {room: roomId, sdp: desc, type: 'sdp-offer', user: $scope.user.username});
             }
 
-            function answer(offer)
+            var answer = function(offer)
             {
                 console.log('pc2 createAnswer start');
                 console.log(peerConnection);
@@ -216,7 +218,7 @@ angular.module('publicApp')
                                 console.log("created Answer and setLocalDescription " + JSON.stringify(answer));
                                 $("#incomingCall").hide();
                                 socket.emit('msg', {room: roomId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
-
+                                
                             }, function (e) {
                                 console.log(e)
                             });
@@ -238,17 +240,16 @@ angular.module('publicApp')
                 console.log('Remote video videoWidth: ' + this.videoWidth +
                         'px,  videoHeight: ' + this.videoHeight + 'px');
             });
-            function updateUsersConnected(data, status)
+            var updateUsersConnected = function(data, status)
             {
                 console.log(data);
-
                 $scope.users = data;
                 if (status)
                     $scope.status = status;
                 $scope.$apply();
                 console.log($scope.users);
             }
-            function hangup() {
+            var hangup = function() {
                 console.log("User Hangup");
                 console.log($scope.user.username);
 
@@ -259,27 +260,31 @@ angular.module('publicApp')
                 connectionClose();
                 stopVideo();
             }
-            function disconnect()
+            var disconnect = function()
             {
                 hangup();
                 // socket.disconnect();
             }
-            function stopVideo()
+            var stopVideo = function()
             {
                 localStream.getVideoTracks()[0].stop();
                 localStream.getAudioTracks()[0].stop();
                 localStream = null;
                 localVideo.pause();
                 //localVideo.remove();
-
             }
 
-            function connectionClose()
+            var connectionClose = function()
             {
                 peerConnection.close();
                 peerConnection = null;
             }
 
-
+            callButton.disabled = true;
+            hangupButton.disabled = true;
+            startButton.onclick = start;
+            callButton.onclick = call;
+            hangupButton.onclick = hangup;
+            disconnectButton.onclick = disconnect;
 
         });

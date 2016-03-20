@@ -1,16 +1,18 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name publicApp.directive:smilies
+ * @description
+ * # Smilies
  */
 
-'use strict';
-var smilies_selector = angular.module('publicApp', ['ui.bootstrap'])
+var smilies_directive = angular.module('publicApp')
 var
         main = "smile",
         smilies = ["biggrin", "confused", "cool", "cry", "eek", "evil", "like", "lol", "love", "mad", "mrgreen", "neutral", "question", "razz", "redface", "rolleyes", "sad", "smile", "surprised", "thumbdown", "thumbup", "twisted", "wink"],
         shorts = {":D": "biggrin", ":-D": "biggrin", ":S": "confused", ":-S": "confused", ";(": "cry", ";-(": "cry", "OO": "eek", "<3": "like", "^^": "lol", ":|": "neutral", ":-|": "neutral", ":P": "razz", ":-P": "razz", ":(": "sad", ":-(": "sad", ":)": "smile", ":-)": "smile", ":O": "surprised", ":-O": "surprised", ";)": "wink", ";-)": "wink"},
-regex = new RegExp(':(' + smilies.join('|') + '):', 'g'),
+        regex = new RegExp(':(' + smilies.join('|') + '):', 'g'),
         template = '<i class="smiley-$1" title="$1"></i>',
         escapeRegExp = function (str) {
             return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
@@ -47,15 +49,16 @@ regex = new RegExp(':(' + smilies.join('|') + '):', 'g'),
 
 
 
-smilies_selector.directive("w3TestDirective", function () {
+smilies_directive.directive("w3TestDirective", function () {
     return {
         template: '<input type="text" value="Click me!" uib-popover-template="I appeared on focus! Click away and I\'ll vanish..."  popover-trigger="focus" class="form-control">'
     };
 });
-smilies_selector.filter('smilies', function () {
+console.log("Smilies script is loaded");
+smilies_directive.filter('smilies', function () {
     return apply;
 })
-smilies_selector.directive('smilies', '$sce', function ($sce) {
+smilies_directive.directive('smilies', '$sce', function ($sce) {
     console.log("smilies");
     return {
         restrict: 'A',
@@ -72,7 +75,8 @@ smilies_selector.directive('smilies', '$sce', function ($sce) {
         }
     };
 })
-smilies_selector.directive('smiliesSelector', ['$timeout', function ($timeout) {
+smilies_directive.directive('smiliesSelector', ['$timeout', function ($timeout) {
+        console.log("smilies selector directive is loaded");
         var templateUrl;
         try {
             angular.module('ui.bootstrap.popover');
@@ -113,7 +117,7 @@ smilies_selector.directive('smiliesSelector', ['$timeout', function ($timeout) {
 
     }])
 /* helper directive for input focusing */
-smilies_selector.directive('focusOnChange', function () {
+smilies_directive.directive('focusOnChange', function () {
     return {
         link: function ($scope, el, attrs) {
             $scope.$watch(attrs.focusOnChange, function () {
@@ -125,7 +129,7 @@ smilies_selector.directive('focusOnChange', function () {
     };
 })
 /* popover template */
-smilies_selector.run(['$templateCache', function ($templateCache) {
+smilies_directive.run(['$templateCache', function ($templateCache) {
         // use ng-init because popover-template only accept a variable
         $templateCache.put('template/smilies/button-a.html',
                 '<i class="smiley-' + main + ' smilies-selector" ' +
