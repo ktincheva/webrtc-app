@@ -23,6 +23,8 @@ angular.module('publicApp')
 
             var localVideo = document.getElementById('local-video');
             var remoteVideo = document.getElementById('remote-video');
+            var remoteVideos = document.getElementsByClassName('free');
+            
             var iceConfig = {'iceServers': [{
                         'url': 'stun:stun.l.google.com:19302'
                     }, {
@@ -107,8 +109,6 @@ angular.module('publicApp')
                         if (data.ice)
                         { 
                             var candidate = new RTCIceCandidate(data.ice);
-                            console.log(candidate);
-                            console.log(peerConnection.RTCPeerConnectionState);
                             peerConnection.addIceCandidate(candidate);
                         }
                         break;
@@ -157,15 +157,37 @@ angular.module('publicApp')
                 console.log('pc1 createOffer start');
                 peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
             }
+            
             var onAddStream = function(event) {
                // localVideo.classList.remove('active-video');
                 console.log("on add stream");
                 console.log(event.stream);
-                /*var vid = document.createElement("video");
+              
+                var videoWrapper = $('#remote-videos-container');
+                console.log(videoWrapper);
+                var remoteVideo = $('<video autoplay id="remote-video"></video>');
                 
+                
+                
+                remoteVideo.addClass("remote-video");
+                remoteVideo.addClass("active-video");
+                remoteVideo.addClass("free");
+                videoWrapper.append(remoteVideo);
+                console.log(remoteVideo);
+                remoteVideo.on('loadedmetadata', function () {
+                console.log('Remote video videoWidth: ' + this.videoWidth +
+                        'px,  videoHeight: ' + this.videoHeight + 'px');
+            });
+                /*var vid = document.createElement("video");
+                remoteVideo.addEventListener('loadedmetadata', function () {
+                console.log('Remote video videoWidth: ' + this.videoWidth +
+                        'px,  videoHeight: ' + this.videoHeight + 'px');
+            });*
                 vid.src = window.URL.createObjectURL(event.stream);*/
                 remoteVideo.src = window.URL.createObjectURL(event.stream)
                 remoteVideo.srcObject = event.stream;
+                
+               
                 remoteVideo.onloadedmetadata = function (e) {
                     remoteVideo.play();
                 };
@@ -179,8 +201,6 @@ angular.module('publicApp')
             }
             
             var onIceCandidate = function(event) {
-                console.log('On Ice Candidates');
-                console.log(event.candidate);
                 if (event.candidate) {                  
                     socket.emit('msg', {type: 'ice', ice: event.candidate}); 
                 }
@@ -236,10 +256,10 @@ angular.module('publicApp')
                         'px,  videoHeight: ' + this.videoHeight + 'px');
             });
 
-            remoteVideo.addEventListener('loadedmetadata', function () {
+            /*remoteVideo.addEventListener('loadedmetadata', function () {
                 console.log('Remote video videoWidth: ' + this.videoWidth +
                         'px,  videoHeight: ' + this.videoHeight + 'px');
-            });
+            });*/
             var updateUsersConnected = function(data, status)
             {
                 console.log(data);
@@ -286,5 +306,5 @@ angular.module('publicApp')
             callButton.onclick = call;
             hangupButton.onclick = hangup;
             disconnectButton.onclick = disconnect;
-
+            
         });
