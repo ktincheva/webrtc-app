@@ -23,8 +23,8 @@ angular.module('publicApp')
 
             var localVideo = document.getElementById('local-video');
             var remoteVideo = document.getElementById('remote-video');
-            var remoteVideos = document.getElementsByClassName('free');
             
+           
             var iceConfig = {'iceServers': [{
                         'url': 'stun:stun.l.google.com:19302'
                     }, {
@@ -37,7 +37,7 @@ angular.module('publicApp')
             var peerConnections = {};
             var socket = io.connect(location.protocol + '//' + location.host);
             var roomId = 2;
-
+            
 
             var offerOptions = {
                 offerToReceiveAudio: 1,
@@ -92,12 +92,16 @@ angular.module('publicApp')
                         console.log("Received SDP offer");
                         console.log(data.sdp);
                         $("#incomingCall").show();
+                        $scope.remoteUser = data.user;
                         answerButton.onclick = answer(data.sdp);
                         peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
                         break;
                     case 'sdp-answer':
-                        
+                        console.log("Received SDP answer");
                         console.log(data.sdp);
+                        console.log(data.user);
+                        $scope.remoteUser = data.user;
+                        //should set peer connection to the pearconnections array and take peer connections between each two users
                         peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp)); 
                         //{
                         //console.log("Call established");
@@ -138,7 +142,6 @@ angular.module('publicApp')
                 callButton.style.backgroundColor = 'green';
                 getPeerConnetion(stream);
                
-               // peerConnection.onaddstream = onAddStream;
                 if ($scope.user.username)
                 {
                     socket.emit('init', {room: roomId, username: $scope.user.username});
@@ -162,22 +165,14 @@ angular.module('publicApp')
                // localVideo.classList.remove('active-video');
                 console.log("on add stream");
                 console.log(event.stream);
-              
-                var videoWrapper = $('#remote-videos-container');
-                console.log(videoWrapper);
-                var remoteVideo = $('<video autoplay id="remote-video"></video>');
-                
-                
-                
-                remoteVideo.addClass("remote-video");
-                remoteVideo.addClass("active-video");
-                remoteVideo.addClass("free");
-                videoWrapper.append(remoteVideo);
-                console.log(remoteVideo);
-                remoteVideo.on('loadedmetadata', function () {
+               
+                //var videoIndex = remoteVideos.length();
+                createVideoElement();
+                remoteVideo = document.getElementById('remote-video-'+$scope.remoteUser);
+                /*remoteVideo.addEventListener('loadedmetadata', function () {
                 console.log('Remote video videoWidth: ' + this.videoWidth +
                         'px,  videoHeight: ' + this.videoHeight + 'px');
-            });
+                 });/*
                 /*var vid = document.createElement("video");
                 remoteVideo.addEventListener('loadedmetadata', function () {
                 console.log('Remote video videoWidth: ' + this.videoWidth +
@@ -298,6 +293,18 @@ angular.module('publicApp')
             {
                 peerConnection.close();
                 peerConnection = null;
+            }
+            
+            var createVideoElement = function()
+            {
+                var videoWrapper = $('#remote-videos-container');
+                console.log(videoWrapper);
+                console.log($scope.remoteUser);
+                var remoteVideo = $('<video autoplay id="remote-video-'+$scope.remoteUser+'"></video>');
+                remoteVideo.addClass("remote-video");
+                remoteVideo.addClass("active-video");
+                remoteVideo.addClass("free");
+                videoWrapper.append(remoteVideo);
             }
 
             callButton.disabled = true;
