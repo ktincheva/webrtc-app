@@ -1,33 +1,38 @@
 <div class  = "container">
     <div class = "row-fluid">
-        <div class="iphone-frame">
-            <div class="screen-wrapper">
-
-                <video class="local-video active-video" autoplay id="local-video" muted></video>
-                <div id = "remote-videos-container" class="remote-videos-container">
-                    
-                   
+        <div class="col-sm-9 col-md-6">
+            <div class="iphone-frame">
+                <div class="screen-wrapper">
+                    <video class="local-video active-video" autoplay id="local-video" muted></video>
+                    <div id = "remote-videos-container" class="remote-videos-container"></div>
                 </div>
-
             </div>
-        </div>
-        <div>
             <div>
-                <label for="username">Username:</label>
-                <input id="username" name = "username" ng-model="user.username">This user: {{user| json}}
+                <div>
+                    <label for="username">Username:</label>
+                    <input id="username" name = "username" ng-model="user.username">This user: {{user| json}}
+                </div>
+                <button id="startButton">Connect</button>
+               
+                <button id="hangupButton">Hang Up</button>
+                <button id="disconnectButton">Disconnect</button>
             </div>
-            <button id="startButton">Connect</button>
-            <button id="callButton">Call</button>
-            <button id="hangupButton">Hang Up</button>
-            <button id="disconnectButton">Disconnect</button>
+            <div>
+                User: {{status}}
+                {{users|json}}
+                {{user}}
+            </div>    
         </div>
-        <div>
-            User: {{status}}
-        </div>    
-        Users connected:
-        <ul>
-            <li ng-repeat="username in users">{{username}}</li>
-        </ul>
+        <div class="col-sm-3 col-md-6">
+            <h2>List of users online</h2>
+            <ul ng-repeat="user_connected in users">
+                <li ng-if="user.username != user_connected">
+                    <div>
+                        <span><a ng-click="sendOffer(user_connected)"><img src = "./images/video_call_icon.png" class="call_icon"/></a>{{user_connected}}</span>
+                    </div>
+                </li>   
+            </ul>    
+        </div>
 
         <div class="modal modal-md" id="incomingCall" tabindex="-1" role="dialog" aria-labelledby="incomingCall" aria-hidden="true">
             <div class="modal-content">

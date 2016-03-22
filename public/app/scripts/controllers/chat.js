@@ -15,7 +15,7 @@ angular.module('publicApp')
             ];
 
             var startButton = document.getElementById('startButton');
-            var callButton = document.getElementById('callButton');
+
             var hangupButton = document.getElementById('hangupButton');
             var disconnectButton = document.getElementById('disconnectButton');
             var answerButton = document.getElementById('incomingAccept');
@@ -23,8 +23,8 @@ angular.module('publicApp')
 
             var localVideo = document.getElementById('local-video');
             var remoteVideo = document.getElementById('remote-video');
-            
-           
+
+
             var iceConfig = {'iceServers': [{
                         'url': 'stun:stun.l.google.com:19302'
                     }, {
@@ -37,7 +37,8 @@ angular.module('publicApp')
             var peerConnections = {};
             var socket = io.connect(location.protocol + '//' + location.host);
             var roomId = 2;
-            
+
+            var connection = {'fromid': '', 'toid': ''};
 
             var offerOptions = {
                 offerToReceiveAudio: 1,
@@ -85,45 +86,65 @@ angular.module('publicApp')
                 updateUsersConnected(data.users, status)
             });
 
-            var handleMessage = function(data) {
-                console.log("Type of Message received " + data.type)
-                switch (data.type) {
-                    case 'sdp-offer':
-                        console.log("Received SDP offer");
-                        console.log(data.sdp);
-                        $("#incomingCall").show();
-                        $scope.remoteUser = data.user;
-                        answerButton.onclick = answer(data.sdp);
-                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-                        break;
-                    case 'sdp-answer':
-                        console.log("Received SDP answer");
-                        console.log(data.sdp);
-                        console.log(data.user);
-                        $scope.remoteUser = data.user;
-                        //should set peer connection to the pearconnections array and take peer connections between each two users
-                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp)); 
-                        //{
-                        //console.log("Call established");
-                        //}, function (e) {
-                        // console.log(e)
-                        //});
-                        break;
-                    case 'ice':
-                        if (data.ice)
-                        { 
-                            var candidate = new RTCIceCandidate(data.ice);
-                            peerConnection.addIceCandidate(candidate);
-                        }
-                        break;
+
+
+
+            var onAddStream = function (event) {
+                // localVideo.classList.remove('active-video');
+                console.log("on add stream");
+                console.log(event.stream);
+                //var videoIndex = remoteVideos.length();
+                createVideoElement();
+                remoteVideo = document.getElementById('remote-video-' + $scope.remoteUser);
+                /*var vid = document.createElement("video");
+                 remoteVideo.addEventListener('loadedmetadata', function () {
+                 console.log('Remote video videoWidth: ' + this.videoWidth +
+                 'px,  videoHeight: ' + this.videoHeight + 'px');
+                 });*
+                 vid.src = window.URL.createObjectURL(event.stream);*/
+                remoteVideo.src = window.URL.createObjectURL(event.stream)
+                remoteVideo.srcObject = event.stream;
+
+
+                remoteVideo.onloadedmetadata = function (e) {
+                    remoteVideo.play();
+                };
+            }
+            var getPeerConnection = function (id)
+            {
+                console.log(peerConnections);
+                if (peerConnections[id])
+                    peerConnection = peerConnections[id];
+                else {
+                    peerConnection = new RTCPeerConnection(iceConfig)
+                    peerConnection.onicecandidate = onIceCandidate;
+                    peerConnection.addStream(localStream);
+                    peerConnection.onaddstream = onAddStream;
+                    peerConnections[id] = peerConnection;
+                }
+            }
+
+            var onIceCandidate = function (event) {
+                if (event.candidate) {
+                    socket.emit('msg', {type: 'ice', ice: event.candidate});
                 }
             }
 
 
+            var onCreateSessionDescriptionError = function (error) {
+                console.log('Failed to create session description: ' + error.toString());
+            }
 
+            var onCreateOfferSuccess = function (desc, toId) {
+                console.log('pc1 setLocalDescription start');
+                // var pc = getPeerConnection(id);
+                console.log(desc);
+                peerConnection.setLocalDescription(desc);
+                socket.emit('msg', {room: roomId, fromId: $scope.user.username, toid: toId, sdp: desc, type: 'sdp-offer', user: $scope.user.username});
+            }
             var start = function () {
                 startButton.disabled = true;
-                
+
                 getUserMedia({
                     audio: true,
                     video: true
@@ -138,86 +159,65 @@ angular.module('publicApp')
                 var streamUrl = window.URL.createObjectURL(stream);
                 localVideo.src = streamUrl;
                 localVideo.srcObject = stream;
-                callButton.disabled = false;
-                callButton.style.backgroundColor = 'green';
-                getPeerConnetion(stream);
-               
                 if ($scope.user.username)
                 {
                     socket.emit('init', {room: roomId, username: $scope.user.username});
-                   
+
                 } else {
                     $scope.errors.push("Missing user name");
                 }
             }
 
-            var call = function() {
-                callButton.disabled = true;
+
+            var handleMessage = function (data) {
+                console.log("Type of Message received " + data.type)
+                console.log(data);
+                switch (data.type) {
+                    case 'sdp-offer':
+                        console.log("Received SDP offer");
+                        getPeerConnection(data.fromId)
+                        $("#incomingCall").show();
+                        $scope.remoteUser = data.user;
+                        answerButton.onclick = sendAnswer(data.sdp, data.fromId);
+                       
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                        break;
+                    case 'sdp-answer':
+                        console.log("Received SDP answer");
+                        console.log(data.sdp);
+                        console.log(data.user);
+                        $scope.remoteUser = data.user;
+                        //should set peer connection to the pearconnections array and take peer connections between each two users
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                        //{
+                        //console.log("Call established");
+                        //}, function (e) {
+                        // console.log(e)
+                        //});
+                        break;
+                    case 'ice':
+                        if (data.ice)
+                        {
+                            var candidate = new RTCIceCandidate(data.ice);
+                            peerConnection.addIceCandidate(candidate);
+                        }
+                        break;
+                }
+            }
+            $scope.sendOffer = function (toId) {
+                getPeerConnection(toId);
                 hangupButton.disabled = false;
                 console.log('Starting call');
-               
                 // may be wiil added for second time --- check this????
                 console.log('pc1 createOffer start');
                 peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
             }
-            
-            var onAddStream = function(event) {
-               // localVideo.classList.remove('active-video');
-                console.log("on add stream");
-                console.log(event.stream);
-               
-                //var videoIndex = remoteVideos.length();
-                createVideoElement();
-                remoteVideo = document.getElementById('remote-video-'+$scope.remoteUser);
-                /*remoteVideo.addEventListener('loadedmetadata', function () {
-                console.log('Remote video videoWidth: ' + this.videoWidth +
-                        'px,  videoHeight: ' + this.videoHeight + 'px');
-                 });/*
-                /*var vid = document.createElement("video");
-                remoteVideo.addEventListener('loadedmetadata', function () {
-                console.log('Remote video videoWidth: ' + this.videoWidth +
-                        'px,  videoHeight: ' + this.videoHeight + 'px');
-            });*
-                vid.src = window.URL.createObjectURL(event.stream);*/
-                remoteVideo.src = window.URL.createObjectURL(event.stream)
-                remoteVideo.srcObject = event.stream;
+
                 
-               
-                remoteVideo.onloadedmetadata = function (e) {
-                    remoteVideo.play();
-                };
-            }
-            var getPeerConnetion = function(stream)
-            {
-                peerConnection = new RTCPeerConnection(iceConfig)
-                peerConnection.onicecandidate = onIceCandidate;
-                peerConnection.addStream(stream);
-                peerConnection.onaddstream = onAddStream;
-            }
-            
-            var onIceCandidate = function(event) {
-                if (event.candidate) {                  
-                    socket.emit('msg', {type: 'ice', ice: event.candidate}); 
-                }
-            }
 
-            
-            var onCreateSessionDescriptionError = function(error) {
-                console.log('Failed to create session description: ' + error.toString());
-            }
-
-            var onCreateOfferSuccess =function(desc) {
-                console.log('pc1 setLocalDescription start');
-                // var pc = getPeerConnection(id);
-                console.log(desc);
-                peerConnection.setLocalDescription(desc);
-                socket.emit('msg', {room: roomId, sdp: desc, type: 'sdp-offer', user: $scope.user.username});
-            }
-
-            var answer = function(offer)
+            var sendAnswer = function (offer, toId)
             {
                 console.log('pc2 createAnswer start');
-                console.log(peerConnection);
                 return function () {
                     console.log("Receive offer: ");
                     console.log(offer.type);
@@ -232,8 +232,8 @@ angular.module('publicApp')
                                 // Send answer to remote end.
                                 console.log("created Answer and setLocalDescription " + JSON.stringify(answer));
                                 $("#incomingCall").hide();
-                                socket.emit('msg', {room: roomId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
-                                
+                                socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: toId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
+
                             }, function (e) {
                                 console.log(e)
                             });
@@ -252,10 +252,10 @@ angular.module('publicApp')
             });
 
             /*remoteVideo.addEventListener('loadedmetadata', function () {
-                console.log('Remote video videoWidth: ' + this.videoWidth +
-                        'px,  videoHeight: ' + this.videoHeight + 'px');
-            });*/
-            var updateUsersConnected = function(data, status)
+             console.log('Remote video videoWidth: ' + this.videoWidth +
+             'px,  videoHeight: ' + this.videoHeight + 'px');
+             });*/
+            var updateUsersConnected = function (data, status)
             {
                 console.log(data);
                 $scope.users = data;
@@ -264,10 +264,9 @@ angular.module('publicApp')
                 $scope.$apply();
                 console.log($scope.users);
             }
-            var hangup = function() {
+            var hangup = function () {
                 console.log("User Hangup");
                 console.log($scope.user.username);
-
                 socket.emit('userleave', {room: roomId, username: $scope.user.username})
                 hangupButton.disabled = true;
                 startButton.disabled = false;
@@ -275,12 +274,12 @@ angular.module('publicApp')
                 connectionClose();
                 stopVideo();
             }
-            var disconnect = function()
+            var disconnect = function ()
             {
                 hangup();
                 // socket.disconnect();
             }
-            var stopVideo = function()
+            var stopVideo = function ()
             {
                 localStream.getVideoTracks()[0].stop();
                 localStream.getAudioTracks()[0].stop();
@@ -289,29 +288,29 @@ angular.module('publicApp')
                 //localVideo.remove();
             }
 
-            var connectionClose = function()
+            var connectionClose = function ()
             {
                 peerConnection.close();
                 peerConnection = null;
             }
-            
-            var createVideoElement = function()
+
+            var createVideoElement = function ()
             {
                 var videoWrapper = $('#remote-videos-container');
                 console.log(videoWrapper);
                 console.log($scope.remoteUser);
-                var remoteVideo = $('<video autoplay id="remote-video-'+$scope.remoteUser+'"></video>');
+                var remoteVideo = $('<video autoplay id="remote-video-' + $scope.remoteUser + '"></video>');
                 remoteVideo.addClass("remote-video");
                 remoteVideo.addClass("active-video");
                 remoteVideo.addClass("free");
                 videoWrapper.append(remoteVideo);
             }
 
-            callButton.disabled = true;
+
             hangupButton.disabled = true;
             startButton.onclick = start;
-            callButton.onclick = call;
+
             hangupButton.onclick = hangup;
             disconnectButton.onclick = disconnect;
-            
+
         });
