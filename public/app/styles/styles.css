@@ -22,9 +22,11 @@ video {
 }
 
 .iphone-frame {
-  background-image: url(/images/iphone-frame.png);
+  /*background-image: url(/images/iphone-frame.png);
   background-size: 800px;
   width: 800px;
+  height: 381px;
+  */
   height: 381px;
 }
 

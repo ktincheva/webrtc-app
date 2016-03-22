@@ -37,7 +37,7 @@ angular.module('publicApp')
             var peerConnections = {};
             var socket = io.connect(location.protocol + '//' + location.host);
             var roomId = 2;
-
+            var connection = {'fromid': '', 'toid': ''};
 
             var offerOptions = {
                 offerToReceiveAudio: 1,
@@ -163,21 +163,6 @@ angular.module('publicApp')
                 console.log("on add stream");
                 console.log(event.stream);
               
-                var videoWrapper = $('#remote-videos-container');
-                console.log(videoWrapper);
-                var remoteVideo = $('<video autoplay id="remote-video"></video>');
-                
-                
-                
-                remoteVideo.addClass("remote-video");
-                remoteVideo.addClass("active-video");
-                remoteVideo.addClass("free");
-                videoWrapper.append(remoteVideo);
-                console.log(remoteVideo);
-                remoteVideo.on('loadedmetadata', function () {
-                console.log('Remote video videoWidth: ' + this.videoWidth +
-                        'px,  videoHeight: ' + this.videoHeight + 'px');
-            });
                 /*var vid = document.createElement("video");
                 remoteVideo.addEventListener('loadedmetadata', function () {
                 console.log('Remote video videoWidth: ' + this.videoWidth +
@@ -216,13 +201,12 @@ angular.module('publicApp')
                 // var pc = getPeerConnection(id);
                 console.log(desc);
                 peerConnection.setLocalDescription(desc);
-                socket.emit('msg', {room: roomId, sdp: desc, type: 'sdp-offer', user: $scope.user.username});
+                socket.emit('msg', {room: roomId, fromid: $scope.user.username, toid: $scope.receiver.username,sdp: desc, type: 'sdp-offer', user: $scope.user.username});
             }
 
             var answer = function(offer)
             {
                 console.log('pc2 createAnswer start');
-                console.log(peerConnection);
                 return function () {
                     console.log("Receive offer: ");
                     console.log(offer.type);
@@ -237,7 +221,7 @@ angular.module('publicApp')
                                 // Send answer to remote end.
                                 console.log("created Answer and setLocalDescription " + JSON.stringify(answer));
                                 $("#incomingCall").hide();
-                                socket.emit('msg', {room: roomId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
+                                socket.emit('msg', {room: roomId, fromid: $scope.user.username, toid: $scope.receiver.username,sdp: answer, type: 'sdp-answer', user: $scope.user.username});
                                 
                             }, function (e) {
                                 console.log(e)
@@ -272,7 +256,6 @@ angular.module('publicApp')
             var hangup = function() {
                 console.log("User Hangup");
                 console.log($scope.user.username);
-
                 socket.emit('userleave', {room: roomId, username: $scope.user.username})
                 hangupButton.disabled = true;
                 startButton.disabled = false;
@@ -299,7 +282,22 @@ angular.module('publicApp')
                 peerConnection.close();
                 peerConnection = null;
             }
-
+            
+            
+            var createVideoElement = function()
+            {
+                var videoWrapper = $('#remote-videos-container');
+                console.log(videoWrapper);
+                var remoteVideo = $('<video autoplay id="remote-video-{}"></video>');
+                remoteVideo.addClass("remote-video");
+                remoteVideo.addClass("active-video");
+                videoWrapper.append(remoteVideo);
+                console.log(remoteVideo);
+                remoteVideo.on('loadedmetadata', function () {
+                console.log('Remote video videoWidth: ' + this.videoWidth +
+                        'px,  videoHeight: ' + this.videoHeight + 'px');
+            });
+            }
             callButton.disabled = true;
             hangupButton.disabled = true;
             startButton.onclick = start;
