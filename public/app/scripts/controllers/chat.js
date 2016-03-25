@@ -14,7 +14,7 @@ angular.module('publicApp')
                 'Karma'
             ];
 
-            var startButton = document.getElementById('startButton');
+            //var startButton = document.getElementById('startButton');
 
             var hangupButton = document.getElementById('hangupButton');
             var disconnectButton = document.getElementById('disconnectButton');
@@ -32,13 +32,14 @@ angular.module('publicApp')
                     }]};
             var localStream;
             var errors = {};
+            var rooms = ['room1', 'room2', 'room3'];
 
             var peerConnection;
             var peerConnections = {};
             var socket = io.connect(location.protocol + '//' + location.host);
             var roomId = 2;
 
-            var connection = {'fromid': '', 'toid': ''};
+            var connection = {};
 
             var offerOptions = {
                 offerToReceiveAudio: 1,
@@ -87,6 +88,27 @@ angular.module('publicApp')
             });
 
 
+            socket.on('connect', function () {
+                console.log("Connect to the chat")
+                // call the server-side function 'adduser' and send one parameter (value of prompt)
+            });
+
+            // listener, whenever the server emits 'updatechat', this updates the chat body
+            socket.on('updatechat', function (username, data) {
+                console.log(data);
+                $scope.username = username;
+                $('#conversation-' + data.room).append('<b>' + username + ':</b> ' + data.text + '<br>');
+            });
+            // listener, whenever the server emits 'updaterooms', this updates the room the client is in
+            socket.on('updaterooms', function (rooms, current_room, users) {
+                console.log("Update rooms ");
+                $scope.users = users.users;
+                $scope.$apply();
+                console.log($scope.users);
+                console.log(current_room);
+                $('.current_room').html(current_room)
+                $scope.current_room = current_room;
+            });
 
 
             var onAddStream = function (event) {
@@ -112,21 +134,26 @@ angular.module('publicApp')
             }
             var getPeerConnection = function (id)
             {
-                console.log(peerConnections);
+                console.log('Get pear connection');
+                
                 if (peerConnections[id])
                     peerConnection = peerConnections[id];
                 else {
+                    console.log("Create new PeerConnection")
                     peerConnection = new RTCPeerConnection(iceConfig)
                     peerConnection.onicecandidate = onIceCandidate;
-                    peerConnection.addStream(localStream);
                     peerConnection.onaddstream = onAddStream;
                     peerConnections[id] = peerConnection;
+                    console.log(peerConnection);
                 }
+                console.log(peerConnections);
             }
 
             var onIceCandidate = function (event) {
+
                 if (event.candidate) {
                     socket.emit('msg', {type: 'ice', ice: event.candidate});
+
                 }
             }
 
@@ -135,58 +162,72 @@ angular.module('publicApp')
                 console.log('Failed to create session description: ' + error.toString());
             }
 
-            var onCreateOfferSuccess = function (desc, toId) {
+            var onCreateOfferSuccess = function (desc) {
                 console.log('pc1 setLocalDescription start');
-                // var pc = getPeerConnection(id);
-                console.log(desc);
-                peerConnection.setLocalDescription(desc);
-                socket.emit('msg', {room: roomId, fromId: $scope.user.username, toid: toId, sdp: desc, type: 'sdp-offer', user: $scope.user.username});
-            }
-            var start = function () {
-                startButton.disabled = true;
+                console.log(connection.toId);
 
-                getUserMedia({
-                    audio: true,
-                    video: true
-                }, getStream, function (e) {
-                    alert('getUserMedia() error: ' + e.name);
-                })
+                peerConnection.setLocalDescription(desc);
+                socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.toId, sdp: desc, type: 'sdp-offer', user: $scope.user.username});
+            }
+            var startUserMedia = function () {
+                console.log("Start user media");
+                console.log(localStream)
+                if (!localStream)
+                {
+                    var media = getUserMedia({
+                        audio: true,
+                        video: true
+                    }, getStream, function (e) {
+                        console.log(e.message);
+                    });
+                } else {
+                    getPeerConnection(connection.toId);
+                    peerConnection.addStream(localStream);
+                }
             }
 
             var getStream = function (stream) {
                 localStream = stream;
-                console.log(stream);
+                console.log(localStream);
                 var streamUrl = window.URL.createObjectURL(stream);
                 localVideo.src = streamUrl;
                 localVideo.srcObject = stream;
-                if ($scope.user.username)
-                {
-                    socket.emit('init', {room: roomId, username: $scope.user.username});
-
-                } else {
-                    $scope.errors.push("Missing user name");
-                }
+                console.log(connection);
+                getPeerConnection(connection.toId);
+                peerConnection.addStream(stream);
             }
 
 
             var handleMessage = function (data) {
-                console.log("Type of Message received " + data.type)
-                console.log(data);
                 switch (data.type) {
                     case 'sdp-offer':
                         console.log("Received SDP offer");
-                        getPeerConnection(data.fromId)
-                        $("#incomingCall").show();
-                        $scope.remoteUser = data.user;
-                        answerButton.onclick = sendAnswer(data.sdp, data.fromId);
-                       
-                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                        if (data.toId == $scope.user.username)
+                        {
+                            //getPeerConnection(data.fromId)
+
+                            $("#incomingCall").show();
+                            connection.fromId = data.fromId;
+                            connection.toId = data.toId;
+                            console.log(data);
+                            console.log(' createAnswer start' + data.toId);
+                            console.log(connection);
+
+                            $scope.remoteUser = data.user;
+                            getPeerConnection(connection.toId);
+                            answerButton.onclick = sendAnswer(data.sdp, data.fromId);
+                            peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                        }
                         break;
                     case 'sdp-answer':
                         console.log("Received SDP answer");
-                        console.log(data.sdp);
-                        console.log(data.user);
                         $scope.remoteUser = data.user;
+                        console.log('form' + data.formId);
+                        console.log('toid' + data.toId);
+                        connection.formId = data.formId;
+                        connection.toId = data.toId;
+
+                        getPeerConnection(connection.toId);
                         //should set peer connection to the pearconnections array and take peer connections between each two users
                         peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
                         //{
@@ -196,6 +237,8 @@ angular.module('publicApp')
                         //});
                         break;
                     case 'ice':
+
+                        console.log(data);
                         if (data.ice)
                         {
                             var candidate = new RTCIceCandidate(data.ice);
@@ -204,25 +247,20 @@ angular.module('publicApp')
                         break;
                 }
             }
-            $scope.sendOffer = function (toId) {
-                getPeerConnection(toId);
-                hangupButton.disabled = false;
-                console.log('Starting call');
-                // may be wiil added for second time --- check this????
-                console.log('pc1 createOffer start');
-                peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
-            }
 
-                
+
 
             var sendAnswer = function (offer, toId)
             {
-                console.log('pc2 createAnswer start');
+
                 return function () {
+
+                    startUserMedia();
+                    console.log()
                     console.log("Receive offer: ");
                     console.log(offer.type);
                     var rtcOffer = new RTCSessionDescription(offer);
-                    console.log(rtcOffer);
+                    console.log(peerConnection);
                     peerConnection.setRemoteDescription(rtcOffer, function () {
                         console.log(peerConnection);
                         console.log("setRemoteDescription, creating answer");
@@ -269,7 +307,7 @@ angular.module('publicApp')
                 console.log($scope.user.username);
                 socket.emit('userleave', {room: roomId, username: $scope.user.username})
                 hangupButton.disabled = true;
-                startButton.disabled = false;
+                localStream = null;
                 //socket.disconnect();
                 connectionClose();
                 stopVideo();
@@ -308,9 +346,72 @@ angular.module('publicApp')
 
 
             hangupButton.disabled = true;
-            startButton.onclick = start;
-
             hangupButton.onclick = hangup;
             disconnectButton.onclick = disconnect;
+            $scope.rooms = rooms;
+            $('#chat_rooms').hide();
+            $scope.login = function ()
+            {
+                console.log("login")
+                if (!$scope.user.username)
+                {
+                    console.log("Username is empty!!!");
+                    $scope.errors.push("Empty username");
+                }
+                else {
+                    $('#chat_rooms').show();
+                    socket.emit('init', {room: roomId, username: $scope.user.username});
+
+                }
+
+                // socket.emit('adduser', $scope.user.username);
+            }
+            $scope.sendOffer = function (toId) {
+
+                console.log(toId);
+                connection.formId = $scope.user.username;
+                connection.toId = toId;
+                if ($scope.user.username)
+                {
+                    getPeerConnection(connection.toId);
+
+                    hangupButton.disabled = false;
+                    console.log('Starting call');
+                    // may be wiil added for second time --- check this????
+                    console.log('pc1 createOffer start');
+                } else {
+                    errors.push("Missing user name");
+                }
+                startUserMedia()
+                peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
+            }
+
+
+            $scope.switchRoom = function (room) {
+                console.log('switch to room: ' + room)
+                socket.emit('switchRoom', room);
+            }
+            $scope.senddata = function (data, room) {
+                console.log(data);
+                $('#data-' + room).val('');
+                data.room = room;
+                // tell server to execute 'sendchat' and send along one parameter
+                socket.emit('sendchat', data);
+            }
+
+            $scope.init = function () {
+
+                console.log('documet ready');
+                // when the client clicks SEND
+                console.log($scope.rooms);
+                // when the client hits ENTER on their keyboard
+                $('.message').keypress(function (e) {
+                    if (e.which == 13) {
+                        $(this).blur();
+                        $('#datasend').focus().click();
+                    }
+                });
+                // initRooms();
+            };
 
         });

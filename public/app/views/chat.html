@@ -1,30 +1,64 @@
-<div class  = "container">
-    <div class = "row-fluid">
+<div class="container">
+    
+        <div class="row-fliud">
+            <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
+        </div>
+        <div class="row-fliud">
+            <form name = "loginForm">
+                <label for="username">Username:</label>
+                <input id="username" name = "username" ng-model="user.username" ng-minlength="5" ng-maxlength="20" required>
+                <input type="submit" id="loginButton" class="btn btn-primary" value="Connect" ng-click="login()"/>
+            </form>
+            <div ng-messages="loginForm.username.$error" style="color:maroon" role="alert">
+                <div ng-message="required">You did not enter a field</div>
+                <div ng-message="minlength">Your field is too short</div>
+                <div ng-message="maxlength">Your field is too long</div>
+            </div>
+            <div>
+                User: {{status}}
+                {{user}}
+            </div>    
+        </div>
+  
+    <div class = "row-fliud" id = "chat_rooms"> 
         <div class="col-sm-9 col-md-6">
+            <div>
+                <uib-tabset justified="true">
+                    <uib-tab ng-repeat="room in rooms" heading="{{room}}" select="switchRoom(room)">
+                        <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
+                        <div id="conversation-{{room}}"></div>
+
+
+                        <div class="input-group">
+                            <input ng-model="message.text" focus-on-change="message.tetx" class="form-control">
+                            <span class="input-group-addon" smilies-selector="message.text" smilies-placement="right" smilies-title="Smilies"></span>
+                        </div>
+
+                        {{message}}
+                        <pre ng-bind-html="message | smilies"></pre>
+                        <input type="button" class = "datasend btn btn-success" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
+
+                    </uib-tab> 
+                </uib-tabset>
+            </div>
+            <div>
             <div class="iphone-frame">
                 <div class="screen-wrapper">
                     <video class="local-video active-video" autoplay id="local-video" muted></video>
                     <div id = "remote-videos-container" class="remote-videos-container"></div>
+                    <span>{{remoteUser}}</span>
                 </div>
             </div>
-            <div>
-                <div>
-                    <label for="username">Username:</label>
-                    <input id="username" name = "username" ng-model="user.username">This user: {{user| json}}
-                </div>
-                <button id="startButton">Connect</button>
-               
+            <div>              
                 <button id="hangupButton">Hang Up</button>
                 <button id="disconnectButton">Disconnect</button>
             </div>
-            <div>
-                User: {{status}}
-                {{users|json}}
-                {{user}}
-            </div>    
+            </div>
+            
         </div>
         <div class="col-sm-3 col-md-6">
             <h2>List of users online</h2>
+              {{users|json}}
             <ul ng-repeat="user_connected in users">
                 <li ng-if="user.username != user_connected">
                     <div>
@@ -33,7 +67,10 @@
                 </li>   
             </ul>    
         </div>
+        
+    </div>
 
+    <div class = "row-fluid">
         <div class="modal modal-md" id="incomingCall" tabindex="-1" role="dialog" aria-labelledby="incomingCall" aria-hidden="true">
             <div class="modal-content">
                 <div class="modal-header">

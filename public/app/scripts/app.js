@@ -65,18 +65,19 @@ var app = angular.module('publicApp', [
                         templateUrl: 'views/chatapp.html',
                         controller: 'ChatappCtrl'
                     })
-                    
+
                     .otherwise({
                         redirectTo: '/room'
                     });
         })
         .constant('config', {
             // Change it for your app URL
-            SIGNALIG_SERVER_URL: 'https://192.168.1.6:5555',
-            max_connections:5
-                    //SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555'
+            SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555',
+            // SIGNALIG_SERVER_URL: 'https://192.168.1.6:5555',
+            max_connections: 5
+
         })
         .run(function () {
-            
-            
+
+
         });
