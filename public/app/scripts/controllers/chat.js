@@ -117,6 +117,7 @@ angular.module('publicApp')
                 console.log(event.stream);
                 //var videoIndex = remoteVideos.length();
                 createVideoElement();
+
                 remoteVideo = document.getElementById('remote-video-' + $scope.remoteUser);
                 /*var vid = document.createElement("video");
                  remoteVideo.addEventListener('loadedmetadata', function () {
@@ -126,34 +127,33 @@ angular.module('publicApp')
                  vid.src = window.URL.createObjectURL(event.stream);*/
                 remoteVideo.src = window.URL.createObjectURL(event.stream)
                 remoteVideo.srcObject = event.stream;
-
-
                 remoteVideo.onloadedmetadata = function (e) {
                     remoteVideo.play();
                 };
             }
             var getPeerConnection = function (id)
             {
-                console.log('Get pear connection');
-                
+                console.log('Get peer connection');
+                console.log('with id ' + id);
+                console.log(peerConnections);
                 if (peerConnections[id])
+                {
+                    console.log("Get existing PeerConnection"+id);
                     peerConnection = peerConnections[id];
+                }
                 else {
                     console.log("Create new PeerConnection")
                     peerConnection = new RTCPeerConnection(iceConfig)
-                    peerConnection.onicecandidate = onIceCandidate;
-                    peerConnection.onaddstream = onAddStream;
                     peerConnections[id] = peerConnection;
-                    console.log(peerConnection);
                 }
-                console.log(peerConnections);
+
+                console.log(peerConnection);
             }
 
             var onIceCandidate = function (event) {
 
                 if (event.candidate) {
-                    socket.emit('msg', {type: 'ice', ice: event.candidate});
-
+                    socket.emit('msg', {type: 'ice', ice: event.candidate, 'connection': connection});
                 }
             }
 
@@ -162,27 +162,43 @@ angular.module('publicApp')
                 console.log('Failed to create session description: ' + error.toString());
             }
 
-            var onCreateOfferSuccess = function (desc) {
+            var onCreateOfferSuccess = function (offer) {
                 console.log('pc1 setLocalDescription start');
                 console.log(connection.toId);
-
-                peerConnection.setLocalDescription(desc);
-                socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.toId, sdp: desc, type: 'sdp-offer', user: $scope.user.username});
-            }
+                peerConnection.setLocalDescription(offer, function () {
+                    socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.toId, sdp: offer, type: 'sdp-offer', user: $scope.user.username});
+                });
+            };
+            
+            var onCreateAnswerSuccess = function (answer) {
+                peerConnection.setLocalDescription(answer, function () {
+                    // send the answer to the remote connection
+                    $("#incomingCall").hide();
+                    socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.formId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
+                });
+            };
+             var onCreateAnswerError = function()
+             {
+                 console.log("On create answer error");
+             };
+                    
             var startUserMedia = function () {
-                console.log("Start user media");
-                console.log(localStream)
+                console.log("Start user media: ");
+                console.log(connection);
+                
                 if (!localStream)
                 {
-                    var media = getUserMedia({
+                    getUserMedia({
                         audio: true,
                         video: true
                     }, getStream, function (e) {
                         console.log(e.message);
                     });
                 } else {
-                    getPeerConnection(connection.toId);
-                    peerConnection.addStream(localStream);
+                    
+                    addStreamAndSetLocalDescription(localStream);
+                    /*;
+                     peerConnection.addStream(localStream);*/
                 }
             }
 
@@ -192,42 +208,60 @@ angular.module('publicApp')
                 var streamUrl = window.URL.createObjectURL(stream);
                 localVideo.src = streamUrl;
                 localVideo.srcObject = stream;
-                console.log(connection);
-                getPeerConnection(connection.toId);
-                peerConnection.addStream(stream);
+
+                console.log('add stream to the peer connection');
+                addStreamAndSetLocalDescription(stream);
+                
             }
 
-
+            var addStreamAndSetLocalDescription = function(stream)
+            {
+                getPeerConnection(connection.toId);
+                peerConnection.addStream(stream);
+                peerConnection.onaddstream = onAddStream;
+                if(connection.type ==='offer')
+                { peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);}
+                else if (connection.type ==='answer')
+                {
+                    var rtcOffer = new RTCSessionDescription(connection.sdp);
+                    peerConnection.setRemoteDescription(rtcOffer, function () {
+                        peerConnection.createAnswer(onCreateAnswerSuccess, onCreateAnswerError);
+                    });
+                }
+                peerConnections[connection.toId]= peerConnection;
+            }
+            
             var handleMessage = function (data) {
+                console.log(data);
                 switch (data.type) {
                     case 'sdp-offer':
                         console.log("Received SDP offer");
-                        if (data.toId == $scope.user.username)
+                        if (data.toId === $scope.user.username)
                         {
                             //getPeerConnection(data.fromId)
-
                             $("#incomingCall").show();
-                            connection.fromId = data.fromId;
-                            connection.toId = data.toId;
+                            connection.fromId = data.toId;
+                            connection.toId = data.fromId;
+                            connection.type = 'answer';
+                            connection.sdp = data.sdp;
                             console.log(data);
-                            console.log(' createAnswer start' + data.toId);
+                            console.log(' createAnswer start to' + data.fromId);
                             console.log(connection);
 
                             $scope.remoteUser = data.user;
-                            getPeerConnection(connection.toId);
-                            answerButton.onclick = sendAnswer(data.sdp, data.fromId);
-                            peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                            
+                            answerButton.onclick = sendAnswer(connection);
                         }
                         break;
                     case 'sdp-answer':
                         console.log("Received SDP answer");
                         $scope.remoteUser = data.user;
-                        console.log('form' + data.formId);
-                        console.log('toid' + data.toId);
-                        connection.formId = data.formId;
+                        console.log('from ' + data.fromId);
+                        console.log('toid ' + data.toId);
+                        connection.fromId = data.fromId;
                         connection.toId = data.toId;
 
-                        getPeerConnection(connection.toId);
+                        getPeerConnection(connection.fromId);
                         //should set peer connection to the pearconnections array and take peer connections between each two users
                         peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
                         //{
@@ -237,52 +271,87 @@ angular.module('publicApp')
                         //});
                         break;
                     case 'ice':
-
                         console.log(data);
-                        if (data.ice)
+                        if (data.ice && peerConnection)
                         {
-                            var candidate = new RTCIceCandidate(data.ice);
-                            peerConnection.addIceCandidate(candidate);
+                            // var candidate = new RTCIceCandidate(data.ice);
+                            //peerConnection.addIceCandidate(candidate);
                         }
                         break;
                 }
             }
 
+// toId == received fromId
 
-
-            var sendAnswer = function (offer, toId)
+            var sendAnswer = function (connection)
             {
-
-                return function () {
-
-                    startUserMedia();
-                    console.log()
-                    console.log("Receive offer: ");
-                    console.log(offer.type);
-                    var rtcOffer = new RTCSessionDescription(offer);
+                return function ()
+                {
+                    console.log("Send Answer to");
+                    console.log(connection.toId);
+                    
+                    //getPeerConnection(toId);
+                   // getPeerConnection(connection.toId);
                     console.log(peerConnection);
-                    peerConnection.setRemoteDescription(rtcOffer, function () {
-                        console.log(peerConnection);
-                        console.log("setRemoteDescription, creating answer");
-                        peerConnection.createAnswer(function (answer) {
-                            console.log(answer);
-                            peerConnection.setLocalDescription(new RTCSessionDescription(answer), function () {
-                                // Send answer to remote end.
-                                console.log("created Answer and setLocalDescription " + JSON.stringify(answer));
-                                $("#incomingCall").hide();
-                                socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: toId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
-
-                            }, function (e) {
-                                console.log(e)
-                            });
-                        }, function (e) {
-                            console.log(e)
-                        });
-                    }, function (e) {
-                        console.log(e)
-                    });
+                    $scope.remoteUser = connection.toId;
+                    startUserMedia();
+                    
+                    console.log("Receive offer: ");
+                    console.log(connection.type);
+                    
+                    /*
+                     var rtcOffer = new RTCSessionDescription(offer);
+                     console.log(peerConnection);
+                     peerConnection.setRemoteDescription(rtcOffer, function () {
+                     console.log(peerConnection);
+                     console.log("setRemoteDescription, creating answer");
+                     peerConnection.createAnswer(function (answer) {
+                     console.log(answer);
+                     peerConnection.setLocalDescription(new RTCSessionDescription(answer), function () {
+                     // Send answer to remote end.
+                     console.log("created Answer and setLocalDescription " + JSON.stringify(answer));
+                     $("#incomingCall").hide();
+                     socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: toId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
+                     
+                     }, function (e) {
+                     console.log(e)
+                     });
+                     }, function (e) {
+                     console.log(e)
+                     });
+                     }, function (e) {
+                     console.log(e)
+                     });
+                     */
                 };
+            };
+
+
+            $scope.sendOffer = function (toId) {
+                console.log('Starting call to');
+                console.log(toId);
+                connection.formId = $scope.user.username;
+                connection.toId = toId;
+                connection.type = 'offer'
+                $scope.remoteUser = toId;
+                if ($scope.user.username && connection.toId)
+                {
+                    hangupButton.disabled = false;
+                    // may be wiil added for second time --- check this????
+                    console.log('pc1 createOffer start');
+                   // getPeerConnection(connection.toId);
+                    console.log(peerConnection);
+                    startUserMedia();
+
+                    console.log('Send offer to ' + connection.toId + ' on peer connection ' + peerConnection);
+
+                   
+                } else {
+                    errors.push("Missing user name");
+                }
+
             }
+
 
             localVideo.addEventListener('loadedmetadata', function () {
                 console.log('Local video videoWidth: ' + this.videoWidth +
@@ -366,25 +435,7 @@ angular.module('publicApp')
 
                 // socket.emit('adduser', $scope.user.username);
             }
-            $scope.sendOffer = function (toId) {
 
-                console.log(toId);
-                connection.formId = $scope.user.username;
-                connection.toId = toId;
-                if ($scope.user.username)
-                {
-                    getPeerConnection(connection.toId);
-
-                    hangupButton.disabled = false;
-                    console.log('Starting call');
-                    // may be wiil added for second time --- check this????
-                    console.log('pc1 createOffer start');
-                } else {
-                    errors.push("Missing user name");
-                }
-                startUserMedia()
-                peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
-            }
 
 
             $scope.switchRoom = function (room) {
@@ -401,7 +452,7 @@ angular.module('publicApp')
 
             $scope.init = function () {
 
-                console.log('documet ready');
+                console.log('document ready');
                 // when the client clicks SEND
                 console.log($scope.rooms);
                 // when the client hits ENTER on their keyboard
