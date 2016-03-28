@@ -120,16 +120,14 @@ angular.module('publicApp')
 
                 remoteVideo = document.getElementById('remote-video-' + $scope.remoteUser);
                 /*var vid = document.createElement("video");
-                 remoteVideo.addEventListener('loadedmetadata', function () {
-                 console.log('Remote video videoWidth: ' + this.videoWidth +
-                 'px,  videoHeight: ' + this.videoHeight + 'px');
-                 });*
-                 vid.src = window.URL.createObjectURL(event.stream);*/
+                 ;*
+                 vid.src = windowv.URL.createObjectURL(event.stream);*/
                 remoteVideo.src = window.URL.createObjectURL(event.stream)
                 remoteVideo.srcObject = event.stream;
-                remoteVideo.onloadedmetadata = function (e) {
-                    remoteVideo.play();
-                };
+                remoteVideo.addEventListener('loadedmetadata', function () {
+                 console.log('Remote video videoWidth: ' + this.videoWidth +
+                 'px,  videoHeight: ' + this.videoHeight + 'px');
+                 });
             }
             var getPeerConnection = function (id)
             {
@@ -165,7 +163,9 @@ angular.module('publicApp')
             var onCreateOfferSuccess = function (offer) {
                 console.log('pc1 setLocalDescription start');
                 console.log(connection.toId);
+                
                 peerConnection.setLocalDescription(offer, function () {
+                    peerConnections[connection.toId]=peerConnection;
                     socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.toId, sdp: offer, type: 'sdp-offer', user: $scope.user.username});
                 });
             };
@@ -174,8 +174,10 @@ angular.module('publicApp')
                 peerConnection.setLocalDescription(answer, function () {
                     // send the answer to the remote connection
                     $("#incomingCall").hide();
+                    peerConnections[connection.toId]=peerConnection;
                     socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.formId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
                 });
+                
             };
              var onCreateAnswerError = function()
              {
@@ -216,6 +218,8 @@ angular.module('publicApp')
 
             var addStreamAndSetLocalDescription = function(stream)
             {
+                console.log("Add Stream and set local decription");
+                console.log(connection);
                 getPeerConnection(connection.toId);
                 peerConnection.addStream(stream);
                 peerConnection.onaddstream = onAddStream;
