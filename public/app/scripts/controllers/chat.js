@@ -113,7 +113,7 @@ angular.module('publicApp')
 
             var onAddStream = function (event) {
                 // localVideo.classList.remove('active-video');
-                console.log("on add stream remote user" + $scope.remoteUser);
+                console.log("on add remote stream of remote user " + $scope.remoteUser);
                 console.log(event.stream);
                 //var videoIndex = remoteVideos.length();
 
@@ -154,8 +154,6 @@ angular.module('publicApp')
 
             var onCreateOfferSuccess = function (offer) {
                 console.log('pc1 setLocalDescription start');
-
-
                 peerConnection.setLocalDescription(offer, function () {
                     console.log(connection.toId);
                     peerConnections[connection.toId] = peerConnection;
@@ -200,12 +198,11 @@ angular.module('publicApp')
 
             var getStream = function (stream) {
                 localStream = stream;
-                console.log(localStream);
                 var streamUrl = window.URL.createObjectURL(stream);
                 localVideo.src = streamUrl;
                 localVideo.srcObject = stream;
-
-                console.log('add stream to the peer connection');
+                console.log('Add local stream to the peer connection');
+                console.log(localStream);
                 addStreamAndSetLocalDescription(stream);
 
             }
@@ -216,8 +213,8 @@ angular.module('publicApp')
                 console.log("Add Stream and set local decription");
                 console.log(connection);
                 getPeerConnection(connection.toId);
-                peerConnection.addStream(stream);
                 peerConnection.onaddstream = onAddStream;
+                peerConnection.addStream(stream);
                 if (connection.type === 'offer')
                 {
                     peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
@@ -237,9 +234,10 @@ angular.module('publicApp')
                 switch (data.type) {
                     case 'sdp-offer':
                         console.log("Received SDP offer");
+
                         if (data.toId === $scope.user.username)
                         {
-                            console.log(data);
+
                             //getPeerConnection(data.fromId)
                             $("#incomingCall").show();
                             connection.fromId = data.toId;
@@ -250,28 +248,30 @@ angular.module('publicApp')
                             console.log(' createAnswer start to' + data.fromId);
                             console.log(connection);
 
-                            $scope.remoteUser = data.user;
-                            /*getPeerConnection(connection.toId);
-                             //should set peer connection to the pearconnections array and take peer connections between each two users
-                             peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-                             peerConnection[connection.fromId] = peerConnection;*/
+                            appendRemoteVideoElement(connection.toId)
 
+                            $scope.remoteUser = data.user;
                             answerButton.onclick = sendAnswer(connection);
                         }
                         break;
                     case 'sdp-answer':
-                        console.log("Received SDP answer");
-                        $scope.remoteUser = data.user;
-                        console.log('from ' + data.fromId);
-                        console.log('toid ' + data.toId);
-                        connection.fromId = data.toId;
-                        connection.toId = data.fromId;
-                        connection.sdp = data.sdp;
-                        getPeerConnection(connection.toId);
-                        //should set peer connection to the pearconnections array and take peer connections between each two users
-                        peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-                        peerConnection[connection.toId] = peerConnection;
+                        if (data.toId === $scope.user.username)
+                        {
+                            console.log("Received SDP answer");
 
+                            $scope.remoteUser = data.user;
+                            connection.fromId = data.toId;
+                            connection.toId = data.fromId;
+                            connection.sdp = data.sdp;
+                            connection.type = 'answer-received'
+
+// wich tipe answer-recived
+                            appendRemoteVideoElement(connection.toId)
+                            getPeerConnection(connection.toId);
+                            //should set peer connection to the pearconnections array and take peer connections between each two users
+                            peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                            peerConnection[connection.toId] = peerConnection;
+                        }
                         //{
                         //console.log("Call established");
                         //}, function (e) {
@@ -282,8 +282,8 @@ angular.module('publicApp')
                         console.log(data);
                         if (data.ice && peerConnection)
                         {
-                            // var candidate = new RTCIceCandidate(data.ice);
-                            //peerConnection.addIceCandidate(candidate);
+                            var candidate = new RTCIceCandidate(data.ice);
+                            peerConnection.addIceCandidate(candidate);
                         }
                         break;
                 }
@@ -296,14 +296,10 @@ angular.module('publicApp')
                 return function ()
                 {
                     console.log("Send Answer to");
-                    console.log(connection.toId);
+                    console.log(connection);
 
-                    //getPeerConnection(toId);
-                    // getPeerConnection(connection.toId);
-                    console.log(peerConnection);
                     $scope.remoteUser = connection.toId;
                     startUserMedia();
-
                     console.log("Receive offer: ");
                     console.log(connection.type);
 
@@ -348,7 +344,7 @@ angular.module('publicApp')
                     // may be wiil added for second time --- check this????
                     console.log('pc1 createOffer start');
                     // getPeerConnection(connection.toId);
-                    console.log(peerConnection);
+
                     startUserMedia();
 
                     console.log('Send offer to ' + connection.toId + ' on peer connection ' + peerConnection);
@@ -409,6 +405,25 @@ angular.module('publicApp')
                 peerConnection = null;
             }
 
+            var appendRemoteVideoElement = function (id)
+            {
+                var remoteVideo = document.getElementById('remote-video-' + id);
+                if (!remoteVideo)
+                {
+                    var videoWrapper = document.getElementById("remote-videos-container");
+                    var video = document.createElement("video");
+                    video.setAttribute("id", "remote-video-" + id);
+                    video.setAttribute("class", "remote-video active-video");
+                    video.style.verticalAlign = "middle";
+                    videoWrapper.appendChild(video)
+                    video.autoplay = true;
+                    video.addEventListener('loadedmetadata', function () {
+                        console.log('Remote video videoWidth: ' + this.videoWidth +
+                                'px,  videoHeight: ' + this.videoHeight + 'px');
+                    })
+                }
+            }
+
             var createVideoElement = function (stream)
             {
                 /*var videoWrapper = $('#remote-videos-container');
@@ -419,21 +434,10 @@ angular.module('publicApp')
                  remoteVideo.addClass("active-video");
                  remoteVideo.addClass("free");
                  */
-                var videoWrapper = document.getElementById("remote-videos-container");
 
 
 
-
-                var video = document.createElement("video");
-                video.setAttribute("id", "remote-video-" + $scope.remoteUser);
-                video.setAttribute("class", "remote-video active-video");
-                video.style.verticalAlign = "middle";
-
-                videoWrapper.appendChild(video);
-
-                video.autoplay = true;
-
-
+                console.log("Set stream to the videoe element per remote user id " + $scope.remoteUser);
 
                 var remoteVideo = document.getElementById('remote-video-' + $scope.remoteUser);
                 console.log(remoteVideo);
@@ -442,6 +446,10 @@ angular.module('publicApp')
                  vid.src = windowv.URL.createObjectURL(event.stream);*/
                 remoteVideo.src = window.URL.createObjectURL(stream)
                 remoteVideo.srcObject = stream;
+                remoteVideo.onloadedmetadata = function (e) {
+                    remoteVideo.play();
+
+                };
                 remoteVideo.play();
                 $scope.$apply();
             }
