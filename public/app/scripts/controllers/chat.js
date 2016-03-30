@@ -134,6 +134,7 @@ angular.module('publicApp')
                 else {
                     console.log("Create new PeerConnection")
                     peerConnection = new RTCPeerConnection(iceConfig)
+                    peerConnection.onaddstream = onAddStream;
                     peerConnections[id] = peerConnection;
                 }
 
@@ -156,17 +157,17 @@ angular.module('publicApp')
                 console.log('pc1 setLocalDescription start');
                 peerConnection.setLocalDescription(offer, function () {
                     console.log(connection.toId);
-                    peerConnections[connection.toId] = peerConnection;
+                   // peerConnections[connection.toId] = peerConnection;
                     socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.toId, sdp: offer, type: 'sdp-offer', user: $scope.user.username});
                 });
             };
 
             var onCreateAnswerSuccess = function (answer) {
-                peerConnection.setLocalDescription(answer, function () {
+                peerConnection.setLocalDescription(new RTCSessionDescription(answer), function () {
                     console.log("send the answer to the remote connection");
                     $("#incomingCall").hide();
                     console.log(connection);
-                    peerConnections[connection.toId] = peerConnection;
+                   // peerConnections[connection.toId] = peerConnection;
                     socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.toId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
                 });
 
@@ -212,8 +213,14 @@ angular.module('publicApp')
 
                 console.log("Add Stream and set local decription");
                 console.log(connection);
+                
                 getPeerConnection(connection.toId);
-                peerConnection.onaddstream = onAddStream;
+                // create video element
+                
+                appendRemoteVideoElement(connection.toId)
+                
+                
+                
                 peerConnection.addStream(stream);
                 if (connection.type === 'offer')
                 {
@@ -226,7 +233,7 @@ angular.module('publicApp')
                         peerConnection.createAnswer(onCreateAnswerSuccess, onCreateAnswerError);
                     });
                 }
-                peerConnections[connection.toId] = peerConnection;
+               // peerConnections[connection.toId] = peerConnection;
             }
 
             var handleMessage = function (data) {
@@ -234,7 +241,7 @@ angular.module('publicApp')
                 switch (data.type) {
                     case 'sdp-offer':
                         console.log("Received SDP offer");
-
+                        
                         if (data.toId === $scope.user.username)
                         {
 
@@ -247,11 +254,13 @@ angular.module('publicApp')
 
                             console.log(' createAnswer start to' + data.fromId);
                             console.log(connection);
-
-                            appendRemoteVideoElement(connection.toId)
-
                             $scope.remoteUser = data.user;
+                            getPeerConnection(connection.fromId);
+                            //should set peer connection to the pearconnections array and take peer connections between each two users
+                            peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                            //peerConnection[connection.toId] = peerConnection;
                             answerButton.onclick = sendAnswer(connection);
+                            
                         }
                         break;
                     case 'sdp-answer':
@@ -266,11 +275,11 @@ angular.module('publicApp')
                             connection.type = 'answer-received'
 
 // wich tipe answer-recived
-                            appendRemoteVideoElement(connection.toId)
-                            getPeerConnection(connection.toId);
+                            //appendRemoteVideoElement(connection.toId)
+                            //getPeerConnection(connection.toId);
                             //should set peer connection to the pearconnections array and take peer connections between each two users
                             peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-                            peerConnection[connection.toId] = peerConnection;
+                            //peerConnection[connection.toId] = peerConnection;
                         }
                         //{
                         //console.log("Call established");
@@ -421,6 +430,7 @@ angular.module('publicApp')
                         console.log('Remote video videoWidth: ' + this.videoWidth +
                                 'px,  videoHeight: ' + this.videoHeight + 'px');
                     })
+                    $scope.$apply();
                 }
             }
 
@@ -436,22 +446,23 @@ angular.module('publicApp')
                  */
 
 
-
+                 
                 console.log("Set stream to the videoe element per remote user id " + $scope.remoteUser);
-
+                
                 var remoteVideo = document.getElementById('remote-video-' + $scope.remoteUser);
                 console.log(remoteVideo);
                 /*var vid = document.createElement("video");
                  ;*
                  vid.src = windowv.URL.createObjectURL(event.stream);*/
                 remoteVideo.src = window.URL.createObjectURL(stream)
-                remoteVideo.srcObject = stream;
+               // remoteVideo.srcObject = stream;
                 remoteVideo.onloadedmetadata = function (e) {
-                    remoteVideo.play();
+                    console.log("loaded meta data");
+                    
 
                 };
-                remoteVideo.play();
-                $scope.$apply();
+               remoteVideo.play();
+                
             }
 
 
