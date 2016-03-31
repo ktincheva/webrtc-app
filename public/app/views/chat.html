@@ -27,17 +27,24 @@
                     <uib-tab ng-repeat="room in rooms" heading="{{room}}" select="switchRoom(room)">
                         <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
                         <div id="conversation-{{room}}"></div>
-
-
                         <div class="input-group">
-                            <input ng-model="message.text" focus-on-change="message.tetx" class="form-control">
-                            <span class="input-group-addon" smilies-selector="message.text" smilies-placement="right" smilies-title="Smilies"></span>
+                            <div id = "data-{{room}}" ng-bind-html="message | smilies"
+                                 contenteditable="true"
+                                 ng-model="message" focus-on-change="message">
+                            </div>
+                            
+                           
+                            <span class="input-group-addon" smilies-selector="message" smilies-placement="right" smilies-title="Smilies"></span>
+                        </div>
+                        <div class="input-group">
+                            <input ng-bind-html="message | smilies" ng-model="message" focus-on-change="message.text" class="form-control">
+                            <span class="input-group-addon" smilies-selector="message" smilies-placement="right" smilies-title="Smilies"></span>
                         </div>
 
-                        {{message}}
+            {{message}}
                         <pre ng-bind-html="message | smilies"></pre>
+                       
                         <input type="button" class = "datasend btn btn-success" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
-
                     </uib-tab> 
                 </uib-tabset>
             </div>

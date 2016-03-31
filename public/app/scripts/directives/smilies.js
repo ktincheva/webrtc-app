@@ -26,8 +26,7 @@ var
             }
         },
         templateForSmiley = function (str) {
-            console.log(str);
-            
+            console.log(str);        
             return (template.replace('$1', str));
         },
         apply = function (input) {

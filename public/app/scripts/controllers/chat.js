@@ -7,7 +7,7 @@
  * Controller of the publicApp
  */
 angular.module('publicApp')
-        .controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, config) {
+        .controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, $filter, config) {
             this.awesomeThings = [
                 'HTML5 Boilerplate',
                 'AngularJS',
@@ -44,6 +44,16 @@ angular.module('publicApp')
                 offerToReceiveAudio: 1,
                 offerToReceiveVideo: 1
             };
+            
+            var videoConstraints = {
+                audio: true,
+                video: {
+                    width: {ideal: 1280},
+                    height: {ideal: 720},
+                    facingMode:  "environment", 
+                }
+
+            }
             console.log("controller loaded event handlers");
             /* peerConnection.oniceconnectionstatechange = function (e) {
              onIceStateChange(peerConnection, e);
@@ -57,7 +67,6 @@ angular.module('publicApp')
                 console.log('room created');
                 console.log(data.socket);
                 updateUsersConnected(data.users, 'conneted')
-
             });
             socket.on('joined', function (data)
             {
@@ -96,7 +105,8 @@ angular.module('publicApp')
             socket.on('updatechat', function (username, data) {
                 console.log(data);
                 $scope.username = username;
-                $('#conversation-' + data.room).append('<b>' + username + ':</b> ' + data.text + '<br>');
+                $('#conversation-' + data.room).append('<b>' + username + ':</b>  <pre> '+data+'</pre>');
+                $scope.$apply();
             });
             // listener, whenever the server emits 'updaterooms', this updates the room the client is in
             socket.on('updaterooms', function (rooms, current_room, users) {
@@ -181,17 +191,9 @@ angular.module('publicApp')
 
                 if (!localStream)
                 {
-                    getUserMedia({
-                        audio: true,
-                        video: true
-                    }, getStream, function (e) {
-                        console.log(e.message);
-                    });
+                    getUserMedia(videoConstraints, getStream, onGetUserMediaError);
                 } else {
-
                     addStreamAndSetDescriptions(localStream);
-                    /*;
-                     peerConnection.addStream(localStream);*/
                 }
             }
 
@@ -230,7 +232,9 @@ angular.module('publicApp')
                 }
                 // peerConnections[connection.toId] = peerConnection;
             }
-
+            var onGetUserMediaError = function (e) {
+                console.log(e.message);
+            }
             var handleMessage = function (data) {
                 switch (data.type) {
                     case 'sdp-offer':
@@ -434,10 +438,9 @@ angular.module('publicApp')
             }
             $scope.senddata = function (data, room) {
                 console.log(data);
-                $('#data-' + room).val('');
-                data.room = room;
+                $('#data-' + room).val(''); 
                 // tell server to execute 'sendchat' and send along one parameter
-                socket.emit('sendchat', data);
+                socket.emit('sendchat', {data: data, room:room});
             }
 
             $scope.init = function () {
