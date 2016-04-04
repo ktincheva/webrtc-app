@@ -25,23 +25,18 @@ var
                 return new RegExp(escapeRegExp(str), 'gi');
             }
         },
-        templateForSmiley = function (str) {
-            console.log(str);        
+        templateForSmiley = function (str) {      
             return (template.replace('$1', str));
         },
         apply = function (input) {
             if (!input)
                 return '';
-            console.log(input)
-            console.log(template);
             var output = input.replace(regex, (template));
-
             for (var sm in shorts) {
                 if (shorts.hasOwnProperty(sm)) {
                     output = output.replace(regExpForShort(sm), templateForSmiley(shorts[sm]));
                 }
             }
-
             return output;
         };
 
@@ -55,31 +50,32 @@ smilies_directive.directive("w3TestDirective", function () {
 });
 console.log("Smilies script is loaded");
 smilies_directive.filter('smilies', function () {
+    console.log("Filter started")
+    
     return apply;
 })
-smilies_directive.directive('smilies', '$sce', function ($sce) {
+smilies_directive.directive('smilies', ['$sce', function ($sce) {
     console.log("smilies");
     return {
         restrict: 'A',
         scope: {
             source: '=smilies'
         },
-        link: function ($scope, el, attrs) {
-            console.log("tuka nakude sum");
-            console.log($scope.source);
-
-            console.log($scope.source);
-            el.html($sce.trustAsHtm(apply($scope.source)));
-
+        link: function ($scope, el, attrs) {  
+            console.log("Start directive (attribure) smiles");
+            console.log($scope);
+           console.log("---------------------------------------------");
+           console.log($scope.source)
+            el.html($sce.trustAsHtml(apply($scope.source)));
         }
     };
-})
+}])
 smilies_directive.directive('smiliesSelector', ['$timeout', function ($timeout) {
         console.log("smilies selector directive is loaded");
         var templateUrl;
         try {
             angular.module('ui.bootstrap.popover');
-            console.log("alabala");
+            console.log("Module ui.boostrap popover is loaded...");
             templateUrl = 'template/smilies/button-a.html';
         }
         catch (e) {
@@ -92,7 +88,7 @@ smilies_directive.directive('smiliesSelector', ['$timeout', function ($timeout) 
                 return {};
             }
         }
-
+        
         return {
             restrict: 'A',
             templateUrl: templateUrl,
@@ -102,11 +98,14 @@ smilies_directive.directive('smiliesSelector', ['$timeout', function ($timeout) 
                 title: '@smiliesTitle'
             },
             link: function ($scope, el) {
+                console.log("scope source");
+                console.log($scope.source);
                 $scope.smilies = smilies;
 
                 $scope.append = function (smiley) {
+                    console.log($scope.source);
                     $scope.source += ' :' + smiley + ': ';
-
+                  
                     $timeout(function () {
                         el.children('i').triggerHandler('click'); // close the popover
                     });
@@ -121,6 +120,8 @@ smilies_directive.directive('focusOnChange', function () {
         link: function ($scope, el, attrs) {
             $scope.$watch(attrs.focusOnChange, function () {
                 console.log("focus on change");
+                console.log(el.html());
+                
                 el[0].focus();
                 console.log("focus on changed");
             });

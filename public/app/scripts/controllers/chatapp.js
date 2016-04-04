@@ -51,6 +51,7 @@ angular.module('publicApp')
                 socket.emit('switchRoom', room);
             }
             $scope.senddata = function (data, room) {
+                console.log("Sennding data to the server");
                 console.log(data);
                 $('#data-' + room).val('');
                 data.room = room;

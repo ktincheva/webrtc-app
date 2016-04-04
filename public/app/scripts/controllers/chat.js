@@ -103,9 +103,11 @@ angular.module('publicApp')
 
             // listener, whenever the server emits 'updatechat', this updates the chat body
             socket.on('updatechat', function (username, data) {
-                console.log(data);
+                console.log("Update chat message");
+                console.log($filter('smilies')(data.text));
+                 
                 $scope.username = username;
-                $('#conversation-' + data.room).append('<b>' + username + ':</b>  <pre> '+data+'</pre>');
+                $('#conversation-' + data.room).append('<b>' + username + ':</b>  <pre>'+$filter('smilies')(data.text)+'</pre>');
                 $scope.$apply();
             });
             // listener, whenever the server emits 'updaterooms', this updates the room the client is in
@@ -437,14 +439,16 @@ angular.module('publicApp')
                 socket.emit('switchRoom', room);
             }
             $scope.senddata = function (data, room) {
+                console.log("Send message data")
                 console.log(data);
-                $('#data-' + room).val(''); 
+                $('#data-' + room).html(''); 
+                data.room = room
                 // tell server to execute 'sendchat' and send along one parameter
-                socket.emit('sendchat', {data: data, room:room});
+                socket.emit('sendchat', data);
             }
 
             $scope.init = function () {
-
+                $scope.message  = {text: "alabala"};
                 console.log('document ready');
                 // when the client clicks SEND
                 console.log($scope.rooms);
@@ -457,5 +461,5 @@ angular.module('publicApp')
                 });
                 // initRooms();
             };
-
+            $scope.init();
         });
