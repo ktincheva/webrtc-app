@@ -446,7 +446,10 @@ angular.module('publicApp')
                 // tell server to execute 'sendchat' and send along one parameter
                 socket.emit('sendchat', data);
             }
-
+            $scope.sendImages = function()
+            {
+                console.log($scope.files);
+            }
             $scope.init = function () {
                 $scope.message  = {text: "alabala"};
                 console.log('document ready');
@@ -461,5 +464,8 @@ angular.module('publicApp')
                 });
                 // initRooms();
             };
+            
+        
+            
             $scope.init();
         });

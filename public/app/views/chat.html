@@ -1,9 +1,9 @@
 <style type="text/css">
-  div[data-*] {
-    cursor: pointer;
-    width: 100%;
-  }
- 
+    div[data-*] {
+        cursor: pointer;
+        width: 100%;
+    }
+
 </style>
 <div class="container">
 
@@ -36,10 +36,13 @@
                         <div id="conversation-{{room}}"></div>
                         <pre ng-bind-html="message.text | smilies"></pre>                       
                         <div class="input-group">
-                        <div id="data-{{room}}" ng-model="message.text" ng-bind-html="message.text | smilies" contentEditable = "true"  focus-on-change="message.html" class="form-control message"></div>
-                        <span class="input-group-addon"  smilies-selector="message.text" smilies-placement="right" smilies-title="Smilies"></span>       
-                      {{message}}
+                            <div id="data-{{room}}" ng-model="message.text" ng-bind-html="message.text | smilies" contentEditable = "true"  focus-on-change="message.html" class="form-control message"></div>
+                            <span class="input-group-addon"  smilies-selector="message.text" smilies-placement="right" smilies-title="Smilies"></span>       
+                            {{message}}
                         </div>
+                        <input type = "file" upload-files="files" multiple/>
+                        <button ng-click = "sendImages()">upload me</button>
+                        <li ng-repeat="file in files">{{file.name}}</li>
                         <input type="button" class = "datasend btn btn-success" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
                     </uib-tab> 
                 </uib-tabset>

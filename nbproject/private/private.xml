@@ -2,15 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/D:/www/webrtc-app/public/app/index.html</file>
-            <file>file:/D:/www/webrtc-app/public/app/views/chatapp.html</file>
-            <file>file:/D:/www/webrtc-app/public/app/views/chat.html</file>
-            <file>file:/D:/www/webrtc-app/index.js</file>
-            <file>file:/D:/www/webrtc-app/public/app/scripts/controllers/chat.js</file>
-            <file>file:/D:/www/webrtc-app/public/app/scripts/app.js</file>
-            <file>file:/D:/www/webrtc-app/public/app/scripts/controllers/chatapp.js</file>
-            <file>file:/D:/www/webrtc-app/lib/server.js</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
