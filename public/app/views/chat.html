@@ -5,6 +5,7 @@
     }
 
 </style>
+<div ng-controller = "ChatCtrl">
 <div class="container">
 
     <div class="row-fliud">
@@ -40,9 +41,9 @@
                             <span class="input-group-addon"  smilies-selector="message.text" smilies-placement="right" smilies-title="Smilies"></span>       
                             {{message}}
                         </div>
-                        <input type = "file" upload-files="files" multiple/>
-                        <button ng-click = "sendImages()">upload me</button>
-                        <li ng-repeat="file in files">{{file.name}}</li>
+                        <input type = "file" upload-files="sendImages($files)" multiple />
+                        <button ng-click = "uploadImages()">Upload</button>
+                        <li ng-repeat="file in files>{{file.name}}</li>
                         <input type="button" class = "datasend btn btn-success" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
                     </uib-tab> 
                 </uib-tabset>
@@ -75,7 +76,6 @@
         </div>
 
     </div>
-
     <div class = "row-fluid">
         <div class="modal modal-md" id="incomingCall" tabindex="-1" role="dialog" aria-labelledby="incomingCall" aria-hidden="true">
             <div class="modal-content">
@@ -95,4 +95,5 @@
             </div>
         </div>
     </div>
+</div>
 </div>

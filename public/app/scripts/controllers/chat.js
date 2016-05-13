@@ -6,8 +6,8 @@
  * # ChatCtrl
  * Controller of the publicApp
  */
-angular.module('publicApp')
-        .controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, $filter, config) {
+
+       chatApp.controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, $filter, config, imagesUpload) {
             this.awesomeThings = [
                 'HTML5 Boilerplate',
                 'AngularJS',
@@ -446,10 +446,29 @@ angular.module('publicApp')
                 // tell server to execute 'sendchat' and send along one parameter
                 socket.emit('sendchat', data);
             }
-            $scope.sendImages = function()
+            var formdata = new FormData();
+            $scope.sendImages = function($files)
             {
-                console.log($scope.files);
+                console.log($files);
+             angular.forEach($files, function (value, key) {
+                 console.log('file: '+value+' key '+key);
+                    formdata.append(key, value);
+                });
+                console.log(formdata);
             }
+            $scope.uploadImages = function()
+            {
+                
+                imagesUpload.uploadImages(formdata)
+                        .success(function(data){
+                            console.log(data);
+                        })
+                        .error(function(data){
+                            //shpould log errors
+                            console.log(data);
+                        })
+            }
+            
             $scope.init = function () {
                 $scope.message  = {text: "alabala"};
                 console.log('document ready');

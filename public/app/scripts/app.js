@@ -9,7 +9,7 @@
  * Main module of the application.
  */
 
-var app = angular.module('publicApp', [
+var chatApp = angular.module('publicApp', [
     'ngAnimate',
     'ngCookies',
     'ngResource',
@@ -74,7 +74,8 @@ var app = angular.module('publicApp', [
             // Change it for your app URL
             //SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555',
            SIGNALIG_SERVER_URL: 'https://192.168.1.7:5555',
-           max_connections: 5
+           max_connections: 5,
+           apiUrl: "https://www.b4dating.lan/xml/",
 
         })
         .run(function () {

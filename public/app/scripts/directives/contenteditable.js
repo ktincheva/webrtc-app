@@ -1,4 +1,4 @@
-angular.module('publicApp').directive('contenteditable', function() {
+chatApp.directive('contenteditable', function() {
   return {
     require: 'ngModel',
     link: function(scope, elm, attrs, ctrl) {
