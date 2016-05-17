@@ -3,9 +3,9 @@ chatApp.service('imagesUpload', function($http, config) {
             {
                 console.log(formdata);
                 return $http({
-                    method: "GET",
+                   method: "POST",
                     url:config.apiUrl+'photo_upload.php',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    headers: {'Content-Type': undefined},
                     data: formdata,
                 });
             }

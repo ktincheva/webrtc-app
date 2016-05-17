@@ -65,6 +65,10 @@ var chatApp = angular.module('publicApp', [
                         templateUrl: 'views/chatapp.html',
                         controller: 'ChatappCtrl'
                     })
+                    .when('/image', {
+                        templateUrl: 'views/uploadPictures.html',
+                        controller: 'uploadPicturesCtrl'
+                    })
 
                     .otherwise({
                         redirectTo: '/room'
@@ -75,7 +79,8 @@ var chatApp = angular.module('publicApp', [
             //SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555',
            SIGNALIG_SERVER_URL: 'https://192.168.1.7:5555',
            max_connections: 5,
-           apiUrl: "https://www.b4dating.lan/xml/",
+           apiUrl: "https://www.b4dating.lan/chatApi/",
+           siteUrl: "https://www.b4dating.lan",
 
         })
         .run(function () {

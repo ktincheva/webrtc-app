@@ -7,7 +7,7 @@
  * Controller of the publicApp
  */
 
-       chatApp.controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, $filter, config, imagesUpload) {
+       chatApp.controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, $filter, config, imagesUpload, Profile) {
             this.awesomeThings = [
                 'HTML5 Boilerplate',
                 'AngularJS',
@@ -424,6 +424,7 @@
                     $scope.errors.push("Empty username");
                 }
                 else {
+                    getProfileByUsername();
                     $('#chat_rooms').show();
                     socket.emit('init', {room: roomId, username: $scope.user.username});
 
@@ -446,27 +447,54 @@
                 // tell server to execute 'sendchat' and send along one parameter
                 socket.emit('sendchat', data);
             }
-            var formdata = new FormData();
+            $scope.formdata = new FormData();
             $scope.sendImages = function($files)
             {
                 console.log($files);
              angular.forEach($files, function (value, key) {
                  console.log('file: '+value+' key '+key);
-                    formdata.append(key, value);
+                    $scope.formdata.append(key, value);
                 });
-                console.log(formdata);
             }
             $scope.uploadImages = function()
             {
                 
-                imagesUpload.uploadImages(formdata)
+                imagesUpload.uploadImages($scope.formdata)
                         .success(function(data){
-                            console.log(data);
+                            createImageUrl(data);
+                            
                         })
                         .error(function(data){
                             //shpould log errors
                             console.log(data);
+                        })           
+            }
+            
+            var getProfileByUsername =function()
+            {
+                console.log($scope.user.username);
+                Profile.getProfileByUsername($scope.user.username)
+                .success(function(data){
+                            console.log(data);
+                            // should send data to the server
+                            
                         })
+                        .error(function(data){
+                            //shpould log errors
+                            console.log(data);
+                        })   
+                
+            }
+            
+            
+            var createImageUrl = function (data)
+            {
+                angular.forEach(data, function (value, key)
+                {
+                    console.log(value);
+                    $scope.message.text += '<a href = "' + config.siteUrl + '/image_' + value.photo_sid + '_1.jpg"> click to see picture </a>';
+                 });
+                 
             }
             
             $scope.init = function () {

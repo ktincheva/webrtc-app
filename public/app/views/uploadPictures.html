@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+
+
+
+
+    <div ng-controller="uploadPicturesCtrl">
+
+        <input type="file" id="file1" name="file" multiple
+            ng-files="getTheFiles($files)" />
+
+        <input type="button" ng-click="uploadFiles()" value="Upload" />
+    </div>
+

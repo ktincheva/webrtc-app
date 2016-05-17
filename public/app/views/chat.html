@@ -43,7 +43,7 @@
                         </div>
                         <input type = "file" upload-files="sendImages($files)" multiple />
                         <button ng-click = "uploadImages()">Upload</button>
-                        <li ng-repeat="file in files>{{file.name}}</li>
+                        <li ng-repeat="file in files">{{file.name}}</li>
                         <input type="button" class = "datasend btn btn-success" id="datasend-{{room}}" value="Send" ng-click="senddata(message, room)" />
                     </uib-tab> 
                 </uib-tabset>
