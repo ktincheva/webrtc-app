@@ -41,7 +41,7 @@ var chatApp = angular.module('publicApp', [
                         templateUrl: 'views/chat.html',
                         controller: 'ChatCtrl'
                     })
-                    .when('/chat/:roomId', {
+                    .when('/chat/:roomId/:userId', {
                         templateUrl: 'views/chat.html',
                         controller: 'ChatCtrl'
                     })
@@ -76,8 +76,8 @@ var chatApp = angular.module('publicApp', [
         })
         .constant('config', {
             // Change it for your app URL
-            //SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555',
-           SIGNALIG_SERVER_URL: 'https://192.168.1.7:5555',
+            SIGNALIG_SERVER_URL: 'https://10.2.2.201:5555',
+           //SIGNALIG_SERVER_URL: 'https://192.168.1.7:5555',
            max_connections: 5,
            apiUrl: "https://www.b4dating.lan/chatApi/",
            siteUrl: "https://www.b4dating.lan",

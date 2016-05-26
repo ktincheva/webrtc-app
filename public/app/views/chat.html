@@ -5,24 +5,14 @@
     }
 
 </style>
-<div ng-controller = "ChatCtrl">
+
 <div class="container">
 
     <div class="row-fliud">
         <h2>Current Room:<span class="current_room"> {{current_room}}</span></h2>
     </div>
     <div class="row-fliud">
-        <form name = "loginForm">
-            <label for="username">Username:</label>
-            <input id="username" name = "username" ng-model="user.username" ng-minlength="5" ng-maxlength="20" required>
-            <input type="submit" id="loginButton" class="btn btn-primary" value="Connect" ng-click="login()"/>
-        </form>
-        <div ng-messages="loginForm.username.$error" style="color:maroon" role="alert">
-            <div ng-message="required">You did not enter a field</div>
-            <div ng-message="minlength">Your field is too short</div>
-            <div ng-message="maxlength">Your field is too long</div>
-        </div>
-        <div>
+           <div>
             User: {{status}}
             {{user}}
         </div>    
@@ -57,6 +47,8 @@
                     </div>
                 </div>
                 <div>              
+                    <button id="sendOfferToAll">Call All</button>
+                    <button id="getUserMedia">Start Media</button>
                     <button id="hangupButton">Hang Up</button>
                     <button id="disconnectButton">Disconnect</button>
                 </div>
@@ -65,11 +57,20 @@
         </div>
         <div class="col-sm-3 col-md-6">
             <h2>List of users online</h2>
-            {{users|json}}
+          
+            
             <ul ng-repeat="user_connected in users">
-                <li ng-if="user.username != user_connected">
+               
+                <li ng-if="user.username != user_connected.username">
                     <div>
-                        <span><a ng-click="sendOffer(user_connected)"><img src = "./images/video_call_icon.png" class="call_icon"/></a>{{user_connected}}</span>
+
+                        <div style="padding: 1px; border: 1px solid #C09788; width: 84px">
+                            <a href="{{config.siteUrl}}/image_{{user_connected.profile.primary_compound_photo_sid}}_4.jpg" class="lightbox">
+                                <img src="{{config.siteUrl}}/image_{{user_connected.profile.primary_compound_photo_sid}}_4.jpg" alt="" border="0" height="82" width="82" />
+                            </a>
+                        </div>
+                        <span><a ng-click="sendOffer(user_connected.username)"><img src = "./images/video_call_icon.png" class="call_icon"/></a>{{user_connected.username}}</span>
+                        {{user_connected.profile.primary_compound_photo_sid}}
                     </div>
                 </li>   
             </ul>    
@@ -84,9 +85,9 @@
                     <h3>Incoming Call</h3>
                 </div>
                 <div class="modal-body">
-                    <img src="img/incoming.png"/><br/><p>&nbsp;</p>
+                    <img src="images/incoming.png"/><br/><p>&nbsp;</p>
                     <p>You have an incoming call from <span id="incomingUser"></span></p>
-                    <audio id="incomingRing" src="http://localhost/ring.ogg" loop/>
+                    <audio id="incomingRing" src="habibi.mp3" loop/>
                 </div>
                 <div class="modal-footer">
                     <button class="btn" data-dismiss="modal" aria-hidden="true">Reject</button>
@@ -95,5 +96,4 @@
             </div>
         </div>
     </div>
-</div>
 </div>

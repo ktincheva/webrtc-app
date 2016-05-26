@@ -5,6 +5,7 @@ chatApp.service('Profile', function($http, config) {
                 return $http({
                    method: "POST",
                     url:config.apiUrl+'load_profile.php',
+                    dataType: 'json',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     data: $.param({username: username}),
                 });

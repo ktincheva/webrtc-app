@@ -1,0 +1,42 @@
+{
+  "name": "webrtc-adapter",
+  "description": "A shim to insulate apps from WebRTC spec changes and browser prefix differences",
+  "license": "BSD-3-Clause",
+  "main": "adapter.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webrtc/adapter.git"
+  },
+  "authors": [
+    "The WebRTC project authors (https://www.webrtc.org/)"
+  ],
+  "moduleType": [
+    "node"
+  ],
+  "ignore": [
+    "test/*"
+  ],
+  "keywords": [
+    "WebRTC",
+    "PeerConnection",
+    "RTCPeerConnection",
+    "getUserMedia",
+    "Chrome",
+    "Chromium",
+    "Firefox",
+    "Edge",
+    "Adapter",
+    "Shim"
+  ],
+  "homepage": "https://github.com/webrtc/adapter",
+  "_release": "d3cdc00cd9",
+  "_resolution": {
+    "type": "branch",
+    "branch": "gh-pages",
+    "commit": "d3cdc00cd984fd6223bcf34604bb62694df9f797"
+  },
+  "_source": "https://github.com/webrtc/adapter.git",
+  "_target": "gh-pages",
+  "_originalSource": "webrtc-adapter",
+  "_direct": true
+}
