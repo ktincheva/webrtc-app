@@ -1,4 +1,4 @@
-var RTCPeerConnection = function()
+var PeerConnection = function(localStream, connection)
 {
    var peerConnection;   
    var iceConfig = {'iceServers': [{
@@ -7,22 +7,21 @@ var RTCPeerConnection = function()
                 'urls': 'stun:stun.l.google.com:19302'
             }]};
     
-    var errors = {};
-    
    var offerOptions = {
         offerToReceiveAudio: 1,
         offerToReceiveVideo: 1
     };
 
-   var getPeerConnection = function (id)
-  
-            console.log("Create new PeerConnection")
-            peerConnection = new RTCPeerConnection(iceConfig)
-            peerConnection.onicecandidate = onIceCandidate;
-            peerConnection.onaddstream = onAddStream;
-            peerConnection.addStream(localStream);
-        console.log(peerConnection);
-    }
+   var connection = connection;
+   var socket = connection.socket;
+
+    console.log("Create new RTCPeerConnection")
+    peerConnection = new RTCPeerConnection(iceConfig)
+    peerConnection.onicecandidate = onIceCandidate;
+    peerConnection.onaddstream = onAddStream;
+    peerConnection.addStream(localStream);
+    console.log(peerConnection);
+   
     
     
    var createOffer = function(connection)
@@ -54,7 +53,7 @@ var RTCPeerConnection = function()
     }
      var onAddStream = function (event) {
         // localVideo.classList.remove('active-video');
-        console.log("on add remote stream of remote user " + $scope.remoteUser);
+        console.log("on add remote stream of remote user " + connection.toId);
         console.log(event.stream);
         createVideoElement(event.stream);
         ;
@@ -69,7 +68,7 @@ var RTCPeerConnection = function()
         peerConnection.setLocalDescription(offer, function () {
             console.log(connection.toId);
             // peerConnections[connection.toId] = peerConnection;
-            socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.toId, sdp: offer, type: 'sdp-offer', user: $scope.user.username});
+            socket.emit('msg', {room: connection.roomId, fromId: connection.user.username, toId: connection.toId, sdp: offer, type: 'sdp-offer', user: connection.user.username});
         });
     };
 
@@ -79,45 +78,17 @@ var RTCPeerConnection = function()
             $("#incomingCall").hide();
             console.log(connection);
             // peerConnections[connection.toId] = peerConnection;
-            socket.emit('msg', {room: roomId, fromId: $scope.user.username, toId: connection.toId, sdp: answer, type: 'sdp-answer', user: $scope.user.username});
+            socket.emit('msg', {room: connection.roomId, fromId: connection.user.username, toId: connection.toId, sdp: answer, type: 'sdp-answer', user: connection.user.username});
         });
 
     };
     var onCreateAnswerError = function ()
     {
         console.log("On create answer error");
-    };
-
-    
-    
-
-
-    var addStreamAndSetDescriptions = function (stream)
-    {
-
-        console.log("Add Stream and set local decription");
-        console.log(connection);
-        getPeerConnection(connection.toId);
-        // create video element
-        appendRemoteVideoElement(connection.toId)
-
-        if (connection.type === 'offer')
-        {
-            console.log('Send offer to ' + connection.toId + ' on peer connection ' + peerConnection);
-            peerConnection.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
-        }
-        else if (connection.type === 'answer')
-        {
-            console.log('Send answer to ' + connection.fromId + ' on peer connection ' + peerConnection);
-            var rtcOffer = new RTCSessionDescription(connection.sdp);
-            peerConnection.setRemoteDescription(rtcOffer, function () {
-                peerConnection.createAnswer(onCreateAnswerSuccess, onCreateAnswerError);
-            });
-        }
-        // peerConnections[connection.toId] = peerConnection;
+    };  
+    return {
+        'createOffer': createOffer,
+        'createAnswer': createAnswer,
     }
-  
-    
-    return this;
 }
 

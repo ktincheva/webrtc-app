@@ -21,225 +21,63 @@ chatApp.controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, 
     
     var hangupButton = document.getElementById('hangupButton');
     var disconnectButton = document.getElementById('disconnectButton');
-    var answerButton = document.getElementById('incomingAccept');
     var userMediaButton = document.getElementById('getUserMedia');
-    var sendOfferToAll = document.getElementById('sendOfferToAll');
+    
     //  var usersList = document.getElementById('users_connected');
 
-    var localVideo = document.getElementById('local-video');
+    
     // var remoteVideo = document.getElementById('remote-video');
     
     
     var rooms = ['room1', 'room2', 'room3'];
     var roomId = 'room1';
 
-    var connection = {};
-    var localStream;
+    
     
     var socket = socketService.socket;
-    var peer = null;
-    var peers = [];
-    
-    
-    var videoConstraints = {
-        video: {width: {exact: 320}, height: {exact: 240}},
-    }
-    
-    
-    console.log(socket);
+    $scope.connection = socketService.connection;  
+    console.log($scope.connection);
     $scope.users = socket.users;
     $scope.status = socket.status;
-
+    
+    
+    if ($routeParams.roomId) roomId = $routeParams.roomId;
+    
+    $scope.connection.socket = socket;
+    $scope.connection.user = {'username': $scope.user.username};
+    $scope.connection.roomId = roomId;
 // toId == received fromId
-    var startUserMedia = function () {
-        console.log("Start user media: ");
-        console.log(connection);
-
-        ///////////////
-        if (localStream) {
-            localStream.getTracks().forEach(function (track) {
-                track.stop();
-            });
-        }
-        setTimeout(function () {
-            navigator.mediaDevices.getUserMedia(
-                    videoConstraints
-                    ).then(
-                    getStream,
-                    onGetUserMediaError
-                    );
-        }, (localStream ? 200 : 0));
-    }
-        var getStream = function (stream) {
-        localStream = stream;
-        var streamUrl = window.URL.createObjectURL(stream);
-        localVideo.src = streamUrl;
-        localVideo.srcObject = stream;
-        console.log('Add local stream to the peer connection');
-        console.log(localStream);
-        addStreamAndSetDescriptions(stream);
-    }
-    var addStreamAndSetDescriptions = function (stream)
-    {
-
-        console.log("Add Stream and set local decription");
-        console.log(connection);
-        getPeerConnection(connection.toId);
-        // create video element
-        appendRemoteVideoElement(connection.toId)
-
-        if (connection.type === 'offer')
-        {
-            peer.createOffer(connection)
-        }
-        else if (connection.type === 'answer')
-        {
-            peer.createAnswer(connection);
-        }
-        // peerConnections[connection.toId] = peerConnection;
-    }
+ 
     
-    var getPeerConnection = function (id)
-    {
-        console.log('Get peer connection');
-        console.log('with id ' + id);
-        console.log(peerConnections);
-        if (peera[id])
-        {
-            console.log("Get existing PeerConnection" + id);
-            peer = peers[id];
-        }
-        else {
-            console.log("Create new PeerConnection")
-            peer = new RTCPeerConnection(iceConfig)
-        }
-        console.log(peer);
-    }
-    
-    
-      var onGetUserMediaError = function (e) {
-        console.log(e);
-    }
-    
-    var sendAnswer = function (connection)
-    {
-        return function ()
-        {
-            console.log("Send Answer to");
-            console.log(connection);
-            $scope.remoteUser = connection.toId;
-            startUserMedia();
-            console.log("Receive offer: ");
-            console.log(connection.type);
-        };
-    };
-
-    var receiveAnswer = function (data)
-    {
-        if (data.toId === $scope.user.username)
-        {
-            console.log("Received SDP answer");
-            $scope.remoteUser = data.user;
-            connection.fromId = data.toId;
-            connection.toId = data.fromId;
-            connection.sdp = data.sdp;
-            connection.type = 'answer-received';
-            peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-        }
-    }
-    
+ 
+   
     $scope.sendOffer = function (toId) {
         console.log('Starting call to');
         console.log(toId);
-        connection.formId = $scope.user.username;
-        connection.toId = toId;
-        connection.type = 'offer'
-        $scope.remoteUser = toId;
-        if ($scope.user.username && connection.toId)
+        $scope.connection.formId = $scope.user.username;
+        $scope.connection.toId = toId;
+        $scope.connection.type = 'offer'
+        
+        if ($scope.user.username && $scope.connection.toId)
         {
             hangupButton.disabled = false;
             // may be wiil added for second time --- check this????
             console.log('pc1 createOffer start');
             // getPeerConnection(connection.toId);
-            startUserMedia();
+            socketService.startUserMedia();
         } else {
             errors.push("Missing user name");
         }
 
     }
-    $scope.sendOfferToAll = function () {
-        console.log('Starting call to all in roorm');
-        console.log(toId);
-        connection.formId = $scope.user.username;
-        connection.toId = toId;
-        connection.type = 'offer'
-        $scope.remoteUser = toId;
-        
-        if ($scope.user.username && connection.toId)
-        {
-            hangupButton.disabled = false;
-            // may be wiil added for second time --- check this????
-            console.log('pc1 createOffer start');
-            // getPeerConnection(connection.toId);
-            startUserMedia();
-        } else {
-            errors.push("Missing user name");
-        }
-
-    }
-    var receiveOffer = function (data) {
-        console.log("Received SDP offer data: ");
-        console.log($scope);
-        if (data.toId === $scope.user.username)
-        {
-            $("#incomingCall").show();
-            connection.fromId = data.toId;
-            connection.toId = data.fromId;
-            connection.type = 'answer';
-            connection.sdp = data.sdp;
-
-            console.log(' createAnswer start to' + data.fromId);
-            console.log(connection);
-            $scope.remoteUser = data.user;
-            //getPeerConnection(connection.fromId);
-            //should set peer connection to the pearconnections array and take peer connections between each two users
-            //peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-            //peerConnection[connection.toId] = peerConnection;
-            answerButton.onclick = sendAnswer(connection);
-
-        }
-    }
-
-    localVideo.addEventListener('loadedmetadata', function () {
-        console.log('Local video videoWidth: ' + this.videoWidth +
-                'px,  videoHeight: ' + this.videoHeight + 'px');
-    });
-
-    /*remoteVideo.addEventListener('loadedmetadata', function () {
-     console.log('Remote video videoWidth: ' + this.videoWidth +
-     'px,  videoHeight: ' + this.videoHeight + 'px');
-     });*/
-    /*updateUsersConnected = function (data, status)
-    {
-        concole.log("----------------- Update connected users ---------------------");
-        console.log(data);
-        $scope.users = data;
-        if (status)
-            $scope.status = status;
-        setTimeout(function(){
-        $scope.$apply();
-    })
-        
-        console.log($scope.users);
-    }*/
     var hangup = function () {
         console.log("User Hangup");
         console.log($scope.user.username);
         socket.emit('userleave', {room: roomId, username: $scope.user.username})
         hangupButton.disabled = true;
-        localStream = null;
+        socket.localStream = null;
         //socket.disconnect();
-        connectionClose();
+        socket.peer.connectionClose();
         stopVideo();
     }
     var disconnect = function ()
@@ -249,41 +87,30 @@ chatApp.controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, 
     }
     var stopVideo = function ()
     {
-        localStream.getVideoTracks()[0].stop();
-        localStream.getAudioTracks()[0].stop();
-        localStream = null;
-        localVideo.pause();
+        socket.localStream.getVideoTracks()[0].stop();
+        socket.localStream.getAudioTracks()[0].stop();
+        socket.localStream = null;
+        socket.localVideo.pause();
         //localVideo.remove();
     }
 
-  
-
-    var appendRemoteVideoElement = function (id)
+  $scope.sendAnswer = function ()
     {
-        var remoteVideo = document.getElementById('remote-video-' + id);
-        if (!remoteVideo)
-        {
-            var videoWrapper = document.getElementById("remote-videos-container");
-            var video = document.createElement("video");
-            video.setAttribute("id", "remote-video-" + id);
-            video.setAttribute("class", "remote-video active-video");
-            video.style.verticalAlign = "middle";
-            videoWrapper.appendChild(video)
-            video.autoplay = true;
-            $scope.$apply();
-            remoteVideo = document.getElementById("remote-video-" + id)
-            remoteVideo.addEventListener('loadedmetadata', function () {
-                remoteVideo.play();
-                console.log('Remote video videoWidth: ' + this.videoWidth +
-                        'px,  videoHeight: ' + this.videoHeight + 'px');
-            });
-        }
-    }
+            console.log("Send Answer to");
+            console.log($scope.connection);
+            $scope.remoteUser = $scope.connection.toId;
+            socketService.startUserMedia();
+            console.log("Receive offer: ");
+            console.log($scope.connection.type);
+    };
 
+    
+   
+
+    
     var createVideoElement = function (stream)
     {
         console.log("Set stream to the videoe element per remote user id " + $scope.remoteUser);
-
         var remoteVideo = document.getElementById('remote-video-' + $scope.remoteUser);
         console.log(remoteVideo);
         /*var vid = document.createElement("video");
@@ -312,9 +139,9 @@ chatApp.controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, 
     
     hangupButton.disabled = true;
     hangupButton.onclick = hangup;
-    userMediaButton.onclick = startUserMedia;
+    userMediaButton.onclick = socketService.startUserMedia;
     disconnectButton.onclick = disconnect;
-    sendOfferToAll.onclick = sendOfferToAll;
+    //sendOfferToAll.onclick = sendOfferToAll;
     
     $scope.rooms = rooms;
     $scope.config = config;
@@ -414,6 +241,7 @@ chatApp.controller('ChatCtrl', function ($sce, $location, $routeParams, $scope, 
         $('.current_room').html(current_room)
         $scope.current_room = current_room;
     });
+    
     
    getProfileByUsername();
     //$scope.init();
